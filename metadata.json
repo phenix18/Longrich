@@ -1,0 +1,6 @@
+{
+  "name": "Longrich Burkina Faso",
+  "description": "Boutique Longrich Burkina Faso: catalogue de produits, commandes WhatsApp et administration des stocks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

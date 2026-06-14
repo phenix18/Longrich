@@ -1,0 +1,106 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Un produit de la boutique Longrich Burkina Faso",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "stock": { "type": "number" },
+        "buyPrice": { "type": "number" },
+        "retailPrice": { "type": "number" },
+        "salePrice": { "type": "number" },
+        "discountPercent": { "type": "number" },
+        "pourcentageSolde": { "type": "number" },
+        "lowStockThreshold": { "type": "number" },
+        "benefit": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["id", "name", "category", "stock", "buyPrice", "retailPrice", "benefit"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Une commande soumise par un client",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "city": { "type": "string" },
+        "deliveryDistance": { "type": "string" },
+        "deliveryFee": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "paymentScreenshot": { "type": "string" },
+        "items": { "type": "array" },
+        "totalPrice": { "type": "number" },
+        "totalProfit": { "type": "number" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "orderNotes": { "type": "string" }
+      },
+      "required": ["id", "customerName", "customerPhone", "city", "paymentMethod", "items", "totalPrice", "totalProfit", "status", "createdAt"]
+    },
+    "ShopSettings": {
+      "title": "ShopSettings",
+      "description": "Les réglages généraux de la boutique",
+      "type": "object",
+      "properties": {
+        "whatsappNumber": { "type": "string" },
+        "orangeMoneyNumber": { "type": "string" },
+        "orangeMoneyName": { "type": "string" },
+        "moovMoneyNumber": { "type": "string" },
+        "moovMoneyName": { "type": "string" },
+        "adminPin": { "type": "string" },
+        "shopName": { "type": "string" },
+        "shopCity": { "type": "string" },
+        "deliveryWithinRadiusPrice": { "type": "number" },
+        "deliveryOutsideRadiusPrice": { "type": "number" },
+        "deliveryOtherCityPrice": { "type": "number" },
+        "deliveryOtherCountryPrice": { "type": "number" },
+        "logoUrl": { "type": "string" }
+      },
+      "required": ["whatsappNumber", "orangeMoneyNumber", "orangeMoneyName", "moovMoneyNumber", "moovMoneyName", "adminPin", "shopName", "shopCity", "deliveryWithinRadiusPrice", "deliveryOutsideRadiusPrice", "deliveryOtherCityPrice", "deliveryOtherCountryPrice"]
+    },
+    "AdminNotification": {
+      "title": "AdminNotification",
+      "description": "Une alerte de notification pour l'administrateur concernant une nouvelle commande ou activité",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "orderId": { "type": "string" },
+        "orderAmount": { "type": "number" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "city": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "read": { "type": "boolean" },
+        "emailNotified": { "type": "boolean" }
+      },
+      "required": ["id", "title", "message", "type", "createdAt", "read"]
+    }
+  },
+  "firestore": {
+    "products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "La collection des produits Longrich en stock"
+    },
+    "orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "La collection des commandes clients soumises"
+    },
+    "settings/{settingsId}": {
+      "schema": { "$ref": "#/entities/ShopSettings" },
+      "description": "La collection contenant le document unique de configuration"
+    },
+    "notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/AdminNotification" },
+      "description": "La collection des notifications d'événements pour l'administrateur"
+    }
+  }
+}
