@@ -748,7 +748,7 @@ export const DEFAULT_SETTINGS: ShopSettings = {
   orangeMoneyName: 'Distributeur Longrich BF',
   moovMoneyNumber: '60000000',
   moovMoneyName: 'Longrich Burkina Faso',
-  adminPin: '1234',
+  adminPin: '000000',
   shopName: 'Longrich Burkina Faso',
   shopCity: 'Ouagadougou',
   deliveryWithinRadiusPrice: 1000,
