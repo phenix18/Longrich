@@ -111,7 +111,19 @@ export default function App() {
     const settingsRef = doc(db, 'settings', 'general');
     const unsubscribe = onSnapshot(settingsRef, (snapshot) => {
       if (snapshot.exists()) {
-        setSettings(snapshot.data() as ShopSettings);
+        const data = snapshot.data() as ShopSettings;
+        if (data.adminPin === '1234') {
+          // Auto-migrate PIN from 1234 to 000000 in database ONLY if authenticated admin
+          const migrated = { ...data, adminPin: '000000' };
+          if (auth.currentUser && auth.currentUser.email === 'alexkorogo@gmail.com') {
+            setDoc(settingsRef, migrated).catch((err) => {
+              console.error('Failed to auto-migrate PIN setting:', err);
+            });
+          }
+          setSettings(migrated);
+        } else {
+          setSettings(data);
+        }
       } else {
         // Seed default settings on initial load setup
         setDoc(settingsRef, DEFAULT_SETTINGS).catch((err) => {
@@ -575,24 +587,24 @@ export default function App() {
       </div>
 
       {/* 2. Primary Navigation Bar */}
-      <header className="sticky top-0 z-40 bg-white text-slate-800 border-b border-emerald-100 shadow-xs px-4 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 bg-white text-slate-800 border-b border-emerald-100 shadow-xs px-2.5 sm:px-4 py-2.5 sm:py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
           
           {/* Logo & Shop name */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-emerald-600 text-white font-display font-black text-xl flex items-center justify-center shadow-xs">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-emerald-600 text-white font-display font-black text-base sm:text-xl flex items-center justify-center shadow-xs shrink-0">
               L
             </div>
-            <div>
-              <h1 className="font-display font-bold text-base tracking-wide text-emerald-800 uppercase leading-none">
+            <div className="min-w-0">
+              <h1 className="font-display font-bold text-xs sm:text-base tracking-tight sm:tracking-wide text-emerald-800 uppercase leading-none truncate max-w-[130px] sm:max-w-none">
                 {settings.shopName}
               </h1>
-              <p className="text-[9px] text-emerald-600 font-bold tracking-widest uppercase mt-1">DISTRIBUTEUR AGRÉÉ - OUAGADOUGOU</p>
+              <p className="text-[8px] sm:text-[9px] text-emerald-600 font-bold tracking-tight sm:tracking-widest uppercase mt-0.5 sm:mt-1 truncate max-w-[130px] sm:max-w-none">DISTRIBUTEUR AGRÉÉ - OUAGADOUGOU</p>
             </div>
           </div>
 
           {/* Controls: Admin Key & Shopping Cart */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             
             <div className="hidden sm:flex flex-col items-end text-right mr-3">
               <span className="text-[9px] uppercase opacity-70 font-bold tracking-wider text-slate-400">Paiement Accepté</span>
@@ -603,7 +615,7 @@ export default function App() {
             <button
               id="admin-panel-lock-btn"
               onClick={() => setIsPinModalOpen(true)}
-              className="flex items-center gap-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold px-3 py-2 text-xs transition-colors border border-emerald-150 cursor-pointer"
+              className="flex items-center gap-1 sm:gap-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold p-1.5 sm:px-3 sm:py-2 text-[10px] sm:text-xs transition-colors border border-emerald-150 cursor-pointer"
               title="Accès Administrateur"
             >
               <Lock className="w-3.5 h-3.5 text-emerald-600" />
@@ -614,12 +626,12 @@ export default function App() {
             <button
               id="floating-cart"
               onClick={() => setIsCartOpen(true)}
-              className="relative flex items-center gap-1.5 rounded-lg bg-green-500 hover:bg-green-600 text-white font-bold px-4.5 py-2 text-xs shadow-md transition-all cursor-pointer"
+              className="relative flex items-center gap-1 sm:gap-1.5 rounded-lg bg-green-500 hover:bg-green-600 text-white font-bold px-2.5 sm:px-4.5 py-1.5 sm:py-2 text-[10px] sm:text-xs shadow-md transition-all cursor-pointer"
             >
-              <ShoppingCart className="w-4 h-4 text-white shrink-0" />
-              <span>Panier</span>
+              <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white shrink-0" />
+              <span className="hidden min-[380px]:inline">Panier</span>
               {cartCount > 0 && (
-                <span className="bg-white text-green-700 rounded-full px-1.5 py-0.5 text-[9px] font-black tracking-tight shrink-0">
+                <span className="bg-white text-green-700 rounded-full px-1 sm:px-1.5 py-0.5 text-[8px] sm:text-[9px] font-black tracking-tight shrink-0">
                   {cartCount}
                 </span>
               )}
@@ -1100,10 +1112,7 @@ export default function App() {
               </div>
               <h3 className="font-display font-extrabold text-slate-900 text-base">Portail Administration</h3>
               <p className="text-xs text-slate-500 mt-1 max-w-[220px]">
-                Saisissez le code PIN à 4 chiffres pour débloquer le tableau de bord des stocks et profits.
-              </p>
-              <p className="text-[10px] text-emerald-700 font-extrabold uppercase mt-2 bg-emerald-50 border border-emerald-100/50 px-2 py-0.5 rounded">
-                Code par défaut: 1234
+                Saisissez le code PIN d'administration pour débloquer le tableau de bord des stocks et profits.
               </p>
             </div>
 

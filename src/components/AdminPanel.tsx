@@ -5,7 +5,7 @@ import {
   X, Search, Database, Settings, ShieldAlert, TrendingUp, DollarSign, 
   ShoppingCart, RefreshCw, FileCode, CheckCircle, Trash2, Edit2, 
   Plus, ChevronDown, Check, Info, ShieldCheck, Download, Upload,
-  Bell, Mail, Eye, Trash, CheckSquare, Share2, Send, Facebook, Link, Globe
+  Bell, Mail, Eye, EyeOff, Trash, CheckSquare, Share2, Send, Facebook, Link, Globe
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -90,6 +90,7 @@ export function AdminPanel({
   const [settingsMoovNum, setSettingsMoovNum] = useState(settings.moovMoneyNumber);
   const [settingsMoovName, setSettingsMoovName] = useState(settings.moovMoneyName);
   const [settingsPin, setSettingsPin] = useState(settings.adminPin);
+  const [showSettingsPin, setShowSettingsPin] = useState(false);
   const [settingsShopName, setSettingsShopName] = useState(settings.shopName);
   const [settingsSuccessMsg, setSettingsSuccessMsg] = useState('');
 
@@ -1275,13 +1276,23 @@ export function AdminPanel({
 
                 <div className="pt-2 border-t border-gray-100">
                   <label className="block text-xs font-bold text-rose-800 mb-1">🔑 Code PIN Administrateur</label>
-                  <input
-                    type="password"
-                    required
-                    value={settingsPin}
-                    onChange={(e) => setSettingsPin(e.target.value)}
-                    className="w-32 rounded-lg border border-rose-200 px-3 py-1.5 text-xs focus:border-rose-500 focus:outline-hidden font-mono tracking-widest"
-                  />
+                  <div className="relative flex items-center max-w-48">
+                    <input
+                      type={showSettingsPin ? "text" : "password"}
+                      required
+                      value={settingsPin}
+                      onChange={(e) => setSettingsPin(e.target.value)}
+                      className="w-full rounded-lg border border-rose-200 pl-3 pr-10 py-1.5 text-xs focus:border-rose-500 focus:outline-hidden font-mono tracking-widest"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSettingsPin(!showSettingsPin)}
+                      className="absolute right-2.5 text-slate-400 hover:text-slate-650 focus:outline-hidden cursor-pointer"
+                      title={showSettingsPin ? "Masquer le code PIN" : "Afficher le code PIN"}
+                    >
+                      {showSettingsPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                   <p className="text-[10px] text-gray-400 mt-1">Code PIN requis pour ouvrir cet espace d'administration.</p>
                 </div>
 
@@ -1933,29 +1944,53 @@ export function AdminPanel({
                 {/* Multiple Images Local Upload drag-and-drop container area */}
                 <div className="border border-dashed border-emerald-250 bg-emerald-50/30 rounded-xl p-3 text-center">
                   <div className="text-lg">📥</div>
-                  <p className="text-[10px] font-extrabold text-slate-700 mt-0.5">Importer une ou plusieurs images</p>
-                  <p className="text-[8px] text-slate-400">Glissez-déposez ou sélectionnez des fichiers à convertir</p>
+                  <p className="text-[10px] font-extrabold text-slate-700 mt-0.5">Importer une ou plusieurs images ({formImages.length}/10)</p>
+                  <p className="text-[8px] text-slate-400">Glissez-déposez ou sélectionnez des fichiers (Maximum 10 images)</p>
                   
                   <input
                     type="file"
                     multiple
                     accept="image/*"
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       if (e.target.files) {
                         const filesArray = Array.from(e.target.files);
-                        filesArray.forEach((file: any) => {
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                            if (typeof reader.result === 'string') {
-                              const base64Str = reader.result;
-                              setFormImages((prev) => {
-                                if (prev.includes(base64Str)) return prev;
-                                return [...prev, base64Str];
-                              });
-                            }
-                          };
-                          reader.readAsDataURL(file);
-                        });
+                        const currentCount = formImages.length;
+                        const availableSlots = 10 - currentCount;
+                        
+                        if (availableSlots <= 0) {
+                          alert("Vous avez déjà atteint la limite maximale de 10 images.");
+                          return;
+                        }
+                        
+                        // Slice extra files to respect 10 images limit
+                        const filesToProcess = filesArray.slice(0, availableSlots);
+                        if (filesArray.length > availableSlots) {
+                          alert(`Seules les ${availableSlots} premières images ont été sélectionnées (maximum 10 images par article).`);
+                        }
+
+                        const readAsDataURL = (file: File): Promise<string> => {
+                          return new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result as string);
+                            reader.onerror = reject;
+                            reader.readAsDataURL(file);
+                          });
+                        };
+
+                        try {
+                          const base64Images = await Promise.all(filesToProcess.map(readAsDataURL));
+                          setFormImages((prev) => {
+                            const combined = [...prev];
+                            base64Images.forEach((img) => {
+                              if (!combined.includes(img) && combined.length < 10) {
+                                combined.push(img);
+                              }
+                            });
+                            return combined;
+                          });
+                        } catch (err) {
+                          console.error("Erreur d'importation d'images :", err);
+                        }
                       }
                     }}
                     className="hidden"
