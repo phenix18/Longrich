@@ -152,10 +152,36 @@ export default function App() {
           .catch((err) => console.error('Products database hydration error:', err));
       } else {
         const list: Product[] = [];
+        const priceMigration = writeBatch(db);
+        let migrationCount = 0;
+
         snapshot.forEach((docSnap) => {
-          list.push(docSnap.data() as Product);
+          const current = docSnap.data() as Product;
+          const official = INITIAL_PRODUCTS.find((product) => product.id === docSnap.id);
+          list.push(current);
+
+          if (official && (
+            current.name !== official.name ||
+            current.buyPrice !== official.buyPrice ||
+            current.retailPrice !== official.retailPrice ||
+            current.benefit !== official.benefit
+          )) {
+            priceMigration.update(docSnap.ref, {
+              name: official.name,
+              buyPrice: official.buyPrice,
+              retailPrice: official.retailPrice,
+              benefit: official.benefit,
+            });
+            migrationCount += 1;
+          }
         });
+
         setProducts(list);
+        if (migrationCount > 0) {
+          priceMigration.commit().catch((err) => {
+            console.error('Catalog price synchronization error:', err);
+          });
+        }
       }
     }, (err) => {
       console.error('Products stream subscription error:', err);
