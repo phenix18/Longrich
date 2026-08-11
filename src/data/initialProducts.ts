@@ -698,11 +698,11 @@ export const INITIAL_PRODUCTS: Product[] = [
   },
   {
     id: 'lr-63',
-    name: 'COMBO M',
+    name: 'SILVER (COMBO M)',
     category: "Kits d'Adhésion",
     stock: 100,
-    buyPrice: 220000,
-    retailPrice: 220000,
+    buyPrice: 160000,
+    retailPrice: 160000,
     benefit: 0,
     imageUrl: 'https://images.unsplash.com/photo-1512909006721-3d6018887383?w=500&auto=format&fit=crop&q=80',
     description: 'Pack Starter Combo M, idéal pour obtenir d\'excellents points de volume (PV) d\'affiliation d\'un coup.'
@@ -723,8 +723,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'PLATINIUM',
     category: "Kits d'Adhésion",
     stock: 100,
-    buyPrice: 780000,
-    retailPrice: 780000,
+    buyPrice: 850000,
+    retailPrice: 850000,
     benefit: 0,
     imageUrl: 'https://images.unsplash.com/photo-1573855619003-97b4799dcd8b?w=500&auto=format&fit=crop&q=80',
     description: 'Statut Platinum direct, idéal pour les professionnels visant de confortables bonus hebdomadaires.'
@@ -734,8 +734,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'PLATINIUM VIP',
     category: "Kits d'Adhésion",
     stock: 100,
-    buyPrice: 1800000,
-    retailPrice: 1800000,
+    buyPrice: 1900000,
+    retailPrice: 1900000,
     benefit: 0,
     imageUrl: 'https://images.unsplash.com/photo-1573855619003-97b4799dcd8b?w=500&auto=format&fit=crop&q=80',
     description: 'Le statut VIP d\'exception du réseau d\'affaires Longrich. Donne droit au partage global des bénéfices mondiaux.'
