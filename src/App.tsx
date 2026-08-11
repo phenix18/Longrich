@@ -1034,6 +1034,12 @@ export default function App() {
 
         </section>
 
+        <footer className="mt-10 border-t border-slate-200 py-6 text-center">
+          <p className="text-xs font-semibold tracking-wide text-slate-500">
+            Copyright Korogo © 2026
+          </p>
+        </footer>
+
       </main>
 
       {/* 7. Floating persistent indicator footer (for fast shopping) */}
