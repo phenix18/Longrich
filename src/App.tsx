@@ -154,24 +154,25 @@ export default function App() {
         const list: Product[] = [];
         const priceMigration = writeBatch(db);
         let migrationCount = 0;
+        const firestoreIds = new Set<string>();
 
         snapshot.forEach((docSnap) => {
           const current = docSnap.data() as Product;
           const official = INITIAL_PRODUCTS.find((product) => product.id === docSnap.id);
-          list.push(current);
+          firestoreIds.add(docSnap.id);
+          const merged = official ? { ...current, ...official, stock: current.stock ?? official.stock } : current;
+          list.push(merged);
 
-          if (official && (
-            current.name !== official.name ||
-            current.buyPrice !== official.buyPrice ||
-            current.retailPrice !== official.retailPrice ||
-            current.benefit !== official.benefit
-          )) {
-            priceMigration.update(docSnap.ref, {
-              name: official.name,
-              buyPrice: official.buyPrice,
-              retailPrice: official.retailPrice,
-              benefit: official.benefit,
-            });
+          if (official && JSON.stringify({ name: current.name, buyPrice: current.buyPrice, retailPrice: current.retailPrice, benefit: current.benefit }) !== JSON.stringify({ name: official.name, buyPrice: official.buyPrice, retailPrice: official.retailPrice, benefit: official.benefit })) {
+            priceMigration.set(docSnap.ref, merged, { merge: true });
+            migrationCount += 1;
+          }
+        });
+
+        INITIAL_PRODUCTS.forEach((official) => {
+          if (!firestoreIds.has(official.id)) {
+            priceMigration.set(doc(db, 'products', official.id), official);
+            list.push(official);
             migrationCount += 1;
           }
         });
