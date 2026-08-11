@@ -1034,9 +1034,15 @@ export default function App() {
 
         </section>
 
+        <footer className="mt-10 border-t border-slate-200 py-6 text-center">
+          <p className="text-xs font-semibold tracking-wide text-slate-500">
+            Copyright Korogo © 2026
+          </p>
+        </footer>
+
       </main>
 
-      {/* 7. Floating persistent indicator footer (for fast shopping) */}
+      {/* 7. Floating persistent indicator footer (for fast shopping) */
       {cartCount > 0 && !isCartOpen && (
         <div className="fixed bottom-6 right-6 z-30 animate-bounce-slow">
           <button
