@@ -4,9 +4,10 @@ import { INITIAL_PRODUCTS, DEFAULT_SETTINGS, PRODUCT_CATEGORIES } from './data/i
 import { ProductCard } from './components/ProductCard';
 import { CartDrawer } from './components/CartDrawer';
 import { AdminPanel } from './components/AdminPanel';
+import { generatePriceListPdf } from './utils/priceListGenerator';
 import { 
   ShoppingCart, Lock, Search, Heart, Sparkles, Activity, Check, 
-  HelpCircle, ShieldCheck, AlertCircle, X, ChevronRight, Bookmark, ArrowRight, Star, Bell
+  HelpCircle, ShieldCheck, AlertCircle, X, ChevronRight, Bookmark, ArrowRight, Star, Bell, Download
 } from 'lucide-react';
 
 // Secure Firestore & Authentication Imports
@@ -935,6 +936,15 @@ export default function App() {
             </div>
           </div>
 
+          <button
+            onClick={() => generatePriceListPdf(products, settings)}
+            disabled={products.length === 0}
+            className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[11px] font-bold uppercase tracking-wider py-2.5 rounded-lg transition-colors cursor-pointer shadow-sm"
+          >
+            <Download className="w-4 h-4" />
+            Télécharger la grille tarifaire
+          </button>
+
           <div className="text-slate-400 text-[10px] border-t border-slate-100 pt-3 flex items-center gap-1.5 font-medium leading-none">
             <span>📍</span>
             <span>Ouagadougou, Zone 1</span>
@@ -1047,6 +1057,14 @@ export default function App() {
                 Affichage de {clientFilteredProducts.length} produits authentiques
               </p>
             </div>
+            <button
+              onClick={() => generatePriceListPdf(products, settings)}
+              disabled={products.length === 0}
+              className="lg:hidden shrink-0 flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-2 rounded-lg transition-colors cursor-pointer shadow-sm"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Grille tarifaire
+            </button>
           </div>
 
           {/* Products Directory list Responsive grid */}
