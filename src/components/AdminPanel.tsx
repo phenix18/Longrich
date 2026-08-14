@@ -241,15 +241,15 @@ export function AdminPanel({
     const calculatedBenefit = activeSellingPrice - formBuyPrice;
     const lowStockThresholdVal = formLowStockThreshold === '' ? undefined : Number(formLowStockThreshold);
 
-    // Firestore plafonne un document à 1 Mio. Images et vidéo importées sont
-    // stockées en base64 dans le produit : au-delà, l'enregistrement échouerait
-    // sans que l'admin comprenne pourquoi.
+    // Firestore plafonne un document à 1 Mio. Les images importées sont stockées
+    // en base64 dans le produit : au-delà, l'enregistrement échouerait sans que
+    // l'admin comprenne pourquoi.
     const mediaWeight = [formImageUrl, formVideoUrl, ...formImages]
       .reduce((total, media) => total + (media ? media.length : 0), 0);
     if (mediaWeight > 900_000) {
       alert(
-        "Les médias de cet article sont trop lourds pour être enregistrés (limite technique de 1 Mo par article).\n\n" +
-        "Retirez quelques images, ou hébergez la vidéo ailleurs et collez son lien dans le champ URL."
+        "Les images de cet article sont trop lourdes pour être enregistrées (limite technique de 1 Mo par article).\n\n" +
+        "Retirez quelques images importées, ou remplacez-les par des liens d'images hébergées."
       );
       return;
     }
@@ -2330,7 +2330,7 @@ export function AdminPanel({
                   </div>
                 )}
 
-                {/* Vidéo courte de démonstration */}
+                {/* Vidéo courte de démonstration (lien collé) */}
                 <div className="pt-3 border-t border-slate-100 space-y-2">
                   <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide">
                     🎬 Vidéo courte (optionnelle)
@@ -2338,50 +2338,15 @@ export function AdminPanel({
 
                   <input
                     type="url"
-                    value={formVideoUrl.startsWith('data:') ? '' : formVideoUrl}
+                    value={formVideoUrl}
                     onChange={(e) => setFormVideoUrl(e.target.value)}
-                    placeholder="Lien direct vers une vidéo .mp4 ou .webm"
-                    disabled={formVideoUrl.startsWith('data:')}
-                    className="w-full rounded-lg border border-gray-250 p-2 text-[11px] focus:border-emerald-600 focus:outline-hidden font-mono disabled:bg-slate-50 disabled:text-slate-400"
+                    placeholder="https://.../demonstration.mp4"
+                    className="w-full rounded-lg border border-gray-250 p-2 text-[11px] focus:border-emerald-600 focus:outline-hidden font-mono"
                   />
-
-                  <div className="border border-dashed border-emerald-250 bg-emerald-50/30 rounded-xl p-3 text-center">
-                    <div className="text-lg">🎥</div>
-                    <p className="text-[10px] font-extrabold text-slate-700 mt-0.5">Importer une vidéo depuis l'appareil</p>
-                    <p className="text-[8px] text-slate-400">
-                      Format .mp4 ou .webm, 400 Ko maximum. Pour une vidéo plus longue,
-                      hébergez-la et collez son lien ci-dessus.
-                    </p>
-
-                    <input
-                      type="file"
-                      accept="video/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        if (file.size > 400_000) {
-                          alert(
-                            `Cette vidéo pèse ${Math.round(file.size / 1024)} Ko, au-delà des 400 Ko autorisés par article.\n\n` +
-                            "Raccourcissez-la, ou hébergez-la ailleurs et collez son lien dans le champ ci-dessus."
-                          );
-                          e.target.value = '';
-                          return;
-                        }
-                        const reader = new FileReader();
-                        reader.onload = () => setFormVideoUrl(reader.result as string);
-                        reader.onerror = () => alert("La vidéo n'a pas pu être lue.");
-                        reader.readAsDataURL(file);
-                      }}
-                      className="hidden"
-                      id="product-video-file-input"
-                    />
-                    <label
-                      htmlFor="product-video-file-input"
-                      className="mt-1.5 inline-block rounded-md bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-1 px-3 text-[9px] uppercase cursor-pointer transition-colors shadow-xs"
-                    >
-                      Parcourir les vidéos
-                    </label>
-                  </div>
+                  <p className="text-[9px] text-slate-400 leading-relaxed">
+                    Collez le lien direct d'une vidéo hébergée, se terminant par .mp4 ou .webm.
+                    Un lien de page YouTube ou Facebook ne se lira pas dans la fiche produit.
+                  </p>
 
                   {formVideoUrl && (
                     <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50/60 p-2">
@@ -2391,7 +2356,7 @@ export function AdminPanel({
                         muted
                       />
                       <p className="flex-1 text-[10px] font-bold text-emerald-900 truncate">
-                        {formVideoUrl.startsWith('data:') ? 'Vidéo importée depuis l\'appareil' : formVideoUrl}
+                        {formVideoUrl}
                       </p>
                       <button
                         type="button"
