@@ -17,12 +17,12 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'GLUCOSAMINE 60 COMPRIMÉS',
     category: 'Santé',
     stock: 100,
-    buyPrice: 19500,
-    retailPrice: 23000,
+    buyPrice: 20000,
+    retailPrice: 24000,
     discountPercent: 10,
-    salePrice: 20700,
-    benefit: 1200,
-    imageUrl: 'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=500&auto=format&fit=crop&q=80',
+    salePrice: 21600,
+    benefit: 1600,
+    imageUrl: '/products/lr-01-glucosamine-arthro.jpg',
     description: 'Complément alimentaire pour le confort articulaire et osseux. Idéal pour soulager l\'arthrose et les douleurs musculaires.'
   },
   {
@@ -30,10 +30,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'BERRY OIL 120 CAPSULES',
     category: 'Santé',
     stock: 100,
-    buyPrice: 30500,
-    retailPrice: 35000,
-    benefit: 4500,
-    imageUrl: 'https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=500&auto=format&fit=crop&q=80',
+    buyPrice: 31000,
+    retailPrice: 36000,
+    benefit: 5000,
+    imageUrl: '/products/lr-02-berry-oil.jpg',
     description: 'Huile d\'argousier riche en antioxydants, vitamines, et omégas 3, 6, 7, 9. Protège les organes vitaux et lutte contre les méfaits du vieillissement.'
   },
   {
@@ -55,7 +55,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 11500,
     retailPrice: 14000,
     benefit: 2500,
-    imageUrl: 'https://images.unsplash.com/photo-1471218674243-e8a68a00415e?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-04-calcium.jpg',
     description: 'Mélange équilibré de minéraux essentiels pour renforcer l\'ossature, l\'immunité et lutter contre la fatigue.'
   },
   {
@@ -63,12 +63,12 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'CAFÉ CORDYCEPS 10 STICKS',
     category: 'Santé',
     stock: 100,
-    buyPrice: 5500,
-    retailPrice: 7000,
+    buyPrice: 6000,
+    retailPrice: 8000,
     discountPercent: 15,
-    salePrice: 5950,
-    benefit: 450,
-    imageUrl: 'https://images.unsplash.com/photo-1541167760496-1628856ab772?w=500&auto=format&fit=crop&q=80',
+    salePrice: 6800,
+    benefit: 800,
+    imageUrl: '/products/lr-05-cafe-cordyceps.jpg',
     description: 'Délicieux café enrichi en extraits de Cordyceps, fortifie les poumons, les reins et augmente la vitalité sexuelle.'
   },
   {
@@ -76,10 +76,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'LOE POWER (LIBAO) 160 CAPSULES',
     category: 'Santé',
     stock: 100,
-    buyPrice: 24500,
+    buyPrice: 25000,
     retailPrice: 30000,
-    benefit: 5500,
-    imageUrl: 'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=500&auto=format&fit=crop&q=80',
+    benefit: 5000,
+    imageUrl: '/products/lr-06-libao.jpg',
     description: 'Puissant fortifiant pour homme. Améliore la fertilité masculine, la qualité du sperme, et combat la fatigue.'
   },
   {
@@ -87,10 +87,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'MENGQUIAN 160 CAPSULES',
     category: 'Santé',
     stock: 100,
-    buyPrice: 24500,
+    buyPrice: 25000,
     retailPrice: 30000,
-    benefit: 5500,
-    imageUrl: 'https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=500&auto=format&fit=crop&q=80',
+    benefit: 5000,
+    imageUrl: '/products/lr-07-mengqian.jpg',
     description: 'Régulateur hormonal pour femme. Combat la fatigue, traite les troubles de la ménopause, et illumine la peau.'
   },
   {
@@ -98,10 +98,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'CORDYCEPS MILITARIS 60 CAPSULES',
     category: 'Santé',
     stock: 100,
-    buyPrice: 72500,
-    retailPrice: 85000,
-    benefit: 12500,
-    imageUrl: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=500&auto=format&fit=crop&q=80',
+    buyPrice: 75000,
+    retailPrice: 87000,
+    benefit: 12000,
+    imageUrl: '/products/lr-08-cordyceps-militaris.jpg',
     description: 'L\'or de Longrich. Puissant antibiotique naturel, stimule l\'immunité, protège le foie et combat la fatigue.'
   },
   {
@@ -109,9 +109,9 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'LIQUEUR THÉRAPEUTIQUE 500ML',
     category: 'Santé',
     stock: 100,
-    buyPrice: 12500,
-    retailPrice: 15000,
-    benefit: 2500,
+    buyPrice: 14000,
+    retailPrice: 17000,
+    benefit: 3000,
     imageUrl: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=500&auto=format&fit=crop&q=80',
     description: 'Boisson de santé qui améliore la circulation sanguine, soulage les rhumatismes et booste la vitalité.'
   },
@@ -131,10 +131,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'VITAMINE C 60 COMPRIMÉS',
     category: 'Santé',
     stock: 100,
-    buyPrice: 10300,
-    retailPrice: 12000,
-    benefit: 1700,
-    imageUrl: 'https://images.unsplash.com/photo-1628243343096-7a051a7781b0?w=500&auto=format&fit=crop&q=80',
+    buyPrice: 11000,
+    retailPrice: 13500,
+    benefit: 2500,
+    imageUrl: '/products/lr-11-vitamine-c.jpg',
     description: 'Vitamine C hautement assimilable pour recharger le corps en énergie et fortifier l\'immunité.'
   },
   {
@@ -145,7 +145,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 6500,
     retailPrice: 8000,
     benefit: 1500,
-    imageUrl: 'https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-12-the-vert.jpg',
     description: 'Élimine les toxines, facilite la digestion, et aide à nettoyer naturellement le corps.'
   },
   {
@@ -156,7 +156,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 6500,
     retailPrice: 8000,
     benefit: 1500,
-    imageUrl: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-13-the-tension.jpg',
     description: 'Formulé pour aider à réguler naturellement et harmonieusement la tension artérielle.'
   },
   {
@@ -167,7 +167,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 6500,
     retailPrice: 8000,
     benefit: 1500,
-    imageUrl: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-14-the-minceur.jpg',
     description: 'Aide à brûler les graisses abdominales superflues et favorise un transit agréable.'
   },
   {
@@ -178,7 +178,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 21000,
     retailPrice: 25000,
     benefit: 4000,
-    imageUrl: 'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-15-gentlemen.jpg',
     description: 'Complément de performance premium, conçu pour la force physique et la vitalité masculine au quotidien.'
   },
   {
@@ -189,7 +189,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 21000,
     retailPrice: 25000,
     benefit: 4000,
-    imageUrl: 'https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-16-lady-superior.jpg',
     description: 'Soutient la vitalité générale, régule le stress et prend soin de l\'énergie de la femme active.'
   },
   {
@@ -200,7 +200,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 21000,
     retailPrice: 25000,
     benefit: 4000,
-    imageUrl: 'https://images.unsplash.com/photo-1511295742364-92767fa62d9f?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-17-sleep-nutrients.jpg',
     description: 'Facilite l\'endormissement rapide et procure un sommeil profond hautement réparateur et enrichi en nutriments.'
   },
   {
@@ -211,7 +211,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 31000,
     retailPrice: 35000,
     benefit: 4000,
-    imageUrl: 'https://images.unsplash.com/photo-1610970881699-44a5587caa90?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-18-nutriv-rich-bleu.jpg',
     description: 'Alimentation crue de substitution complète, riche en antioxydants et nutriments bio.'
   },
   {
@@ -222,7 +222,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 31000,
     retailPrice: 35000,
     benefit: 4000,
-    imageUrl: 'https://images.unsplash.com/photo-1610970881699-44a5587caa90?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-19-nutriv-rich-rose.jpg',
     description: 'Cocktail de nutriments détoxifiants pour purifier les cellules et revigorer l\'éclat sain interne.'
   },
   {
@@ -233,7 +233,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 50000,
     retailPrice: 60000,
     benefit: 10000,
-    imageUrl: 'https://images.unsplash.com/photo-1574634534894-89d7576c8259?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-20-gobelet-alcalin.jpg',
     description: 'Transforme l\'eau acide en eau alcaline saine avec des ions négatifs riches en antioxydants vitaux.'
   },
 
@@ -246,7 +246,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 4000,
     retailPrice: 5000,
     benefit: 1000,
-    imageUrl: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-21-anti-moustique.jpg',
     description: 'Formule saine et odorante protégeant efficacement contre les attaques et piqûres de moustiques.'
   },
   {
@@ -257,7 +257,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 3500,
     retailPrice: 4500,
     benefit: 1000,
-    imageUrl: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-22-deodorant.jpg',
     description: 'Régule la sudation corporelle sans occlure les pores. Protège 48 heures de toute odeur désagréable.'
   },
   {
@@ -265,9 +265,9 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'PÂTE DENTIFRICE MULTIFONCTIONS 100G',
     category: 'Soins & Hygiène',
     stock: 100,
-    buyPrice: 2000,
-    retailPrice: 2500,
-    benefit: 500,
+    buyPrice: 2200,
+    retailPrice: 3000,
+    benefit: 800,
     imageUrl: 'https://images.unsplash.com/photo-1559599101-f09722fb4948?w=500&auto=format&fit=crop&q=80',
     description: 'Au thé blanc et à l\'aloe vera protecteur. Nettoie en profondeur et élimine la sensibilité gingivale.'
   },
@@ -279,7 +279,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 4000,
     retailPrice: 5000,
     benefit: 1000,
-    imageUrl: 'https://images.unsplash.com/photo-1559599101-f09722fb4948?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-24-dentifrice-200g.jpg',
     description: 'Le format familial économique de la célèbre pâte dentifrice blanche réparatrice Longrich.'
   },
   {
@@ -290,7 +290,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 2000,
     retailPrice: 2500,
     benefit: 500,
-    imageUrl: 'https://images.unsplash.com/photo-1559599101-f09722fb4948?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-25-dentifrice-enfant.jpg',
     description: 'Spécialement adaptée pour les gencives sensibles des enfants. Totalement exempte de fluor chimique.'
   },
   {
@@ -312,7 +312,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 1100,
     retailPrice: 1500,
     benefit: 400,
-    imageUrl: 'https://images.unsplash.com/photo-1471218674243-e8a68a00415e?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-27-brosse-dents-enfant.jpg',
     description: 'Tête miniature douce aux coloris amusants pour encourager le brossage quotidien sain chez l\'enfant.'
   },
   {
@@ -320,10 +320,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'COUCHE DE BEBE (S, M, L, XL)',
     category: 'Soins & Hygiène',
     stock: 100,
-    buyPrice: 7600,
-    retailPrice: 9000,
-    benefit: 1400,
-    imageUrl: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=500&auto=format&fit=crop&q=80',
+    buyPrice: 8000,
+    retailPrice: 9500,
+    benefit: 1500,
+    imageUrl: '/products/lr-28-couches-bebe.jpg',
     description: 'Couches respirantes et hypoallergéniques d\'absorption totale pour préserver les fesses de bébé.'
   },
   {
@@ -331,10 +331,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'CRÈME DE MAIN REPARATRICE 100G',
     category: 'Soins & Hygiène',
     stock: 100,
-    buyPrice: 4000,
-    retailPrice: 5000,
-    benefit: 1000,
-    imageUrl: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500&auto=format&fit=crop&q=80',
+    buyPrice: 3800,
+    retailPrice: 4700,
+    benefit: 900,
+    imageUrl: '/products/lr-29-creme-mains.jpg',
     description: 'Nourrit, répare et assouplit instantanément les mains rêches ou desséchées par les tâches ménagères.'
   },
   {
@@ -345,7 +345,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 7000,
     retailPrice: 8000,
     benefit: 1000,
-    imageUrl: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-30-gel-douche-300ml.jpg',
     description: 'Nettoie en douceur avec une délicate note relaxante aromatique de thé blanc d\'exception.'
   },
   {
@@ -364,10 +364,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'GEL DE DOUCHE OLIVE OIL',
     category: 'Soins & Hygiène',
     stock: 100,
-    buyPrice: 10000,
+    buyPrice: 9500,
     retailPrice: 12000,
-    benefit: 2000,
-    imageUrl: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=500&auto=format&fit=crop&q=80',
+    benefit: 2500,
+    imageUrl: '/products/lr-32-gel-douche-olive.jpg',
     description: 'Élaboré à base d\'huile d\'olive nourrissante et hydratante pour les peaux les plus desséchées.'
   },
   {
@@ -378,7 +378,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 4000,
     retailPrice: 5000,
     benefit: 1000,
-    imageUrl: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-33-snake-oil-80ml.jpg',
     description: 'Huile de serpent traditionnelle pour revigorer les cheveux et soigner les imperfections cutanées.'
   },
   {
@@ -389,7 +389,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 5000,
     retailPrice: 6000,
     benefit: 1000,
-    imageUrl: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-34-snake-oil-120ml.jpg',
     description: 'Format XL de l\'incroyable huile de serpent réparatrice corporelle et capillaire multifonctions.'
   },
   {
@@ -397,9 +397,9 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'KIT DE VOYAGE (5 produits)',
     category: 'Soins & Hygiène',
     stock: 100,
-    buyPrice: 800,
-    retailPrice: 1000,
-    benefit: 200,
+    buyPrice: 1000,
+    retailPrice: 1500,
+    benefit: 500,
     imageUrl: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500&auto=format&fit=crop&q=80',
     description: 'Un kit compact très pratique contenant vos miniatures indispensables pour tous vos déplacements.'
   },
@@ -411,7 +411,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 4500,
     retailPrice: 6000,
     benefit: 1500,
-    imageUrl: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-36-lait-sod.jpg',
     description: 'Lait hydratant corporel intense aux enzymes SOD. Atténue visiblement les vergetures et imperfections.'
   },
   {
@@ -422,7 +422,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 4000,
     retailPrice: 5000,
     benefit: 1000,
-    imageUrl: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-37-lotion-rajeunissante.jpg',
     description: 'Lotion hydratante anti-âge raffermissant le visage pour une mine lumineuse éclatante.'
   },
   {
@@ -430,10 +430,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'LOTION ANTI DOULEURS 60ML',
     category: 'Soins & Hygiène',
     stock: 100,
-    buyPrice: 1300,
-    retailPrice: 1500,
-    benefit: 200,
-    imageUrl: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500&auto=format&fit=crop&q=80',
+    buyPrice: 1500,
+    retailPrice: 2000,
+    benefit: 500,
+    imageUrl: '/products/lr-38-lotion-anti-douleurs.jpg',
     description: 'Effet antalgique et chauffant rapide pour soulager courbatures et tensions musculaires.'
   },
   {
@@ -444,7 +444,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 10000,
     retailPrice: 12000,
     benefit: 2000,
-    imageUrl: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-39-parfum-homme.jpg',
     description: 'Senteur masculine élégante et majestueuse, pour une assurance et un sillage remarquable.'
   },
   {
@@ -455,7 +455,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 10000,
     retailPrice: 12000,
     benefit: 2000,
-    imageUrl: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-40-parfum-femme.jpg',
     description: 'Fragrance fleurie exquise, capturant le charme naturel de la femme moderne raffinée.'
   },
   {
@@ -463,10 +463,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'CHAMPOING ET GEL DE DOUCHE BEBE',
     category: 'Soins & Hygiène',
     stock: 100,
-    buyPrice: 6600,
-    retailPrice: 7500,
-    benefit: 900,
-    imageUrl: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=500&auto=format&fit=crop&q=80',
+    buyPrice: 7000,
+    retailPrice: 8000,
+    benefit: 1000,
+    imageUrl: '/products/lr-41-shampoing-bebe.jpg',
     description: 'Nettoyant 2-en-1 ultra-doux au pH neutre protecteur pour le cuir chevelu de votre bébé.'
   },
   {
@@ -474,10 +474,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'POUDRE DE BEBE',
     category: 'Soins & Hygiène',
     stock: 100,
-    buyPrice: 6600,
-    retailPrice: 7500,
-    benefit: 900,
-    imageUrl: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=500&auto=format&fit=crop&q=80',
+    buyPrice: 7000,
+    retailPrice: 8000,
+    benefit: 1000,
+    imageUrl: '/products/lr-42-poudre-bebe.jpg',
     description: 'Finition talc soyeuse aux extraits de maïs bio pour empêcher les frottements d\'humidité irritants.'
   },
   {
@@ -485,10 +485,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'SAVON NOIR AU BAMBOU (3x100g)',
     category: 'Soins & Hygiène',
     stock: 100,
-    buyPrice: 6500,
-    retailPrice: 8000,
-    benefit: 1500,
-    imageUrl: 'https://images.unsplash.com/photo-1607006342426-668d15250424?w=500&auto=format&fit=crop&q=80',
+    buyPrice: 6300,
+    retailPrice: 7500,
+    benefit: 1200,
+    imageUrl: '/products/lr-43-savon-bambou.jpg',
     description: 'Soin purifiant intense au charbon actif de bambou. Lutte radicalement contre l\'acné rebelle.'
   },
   {
@@ -496,10 +496,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'PARFUM DE BOUCHE 15G',
     category: 'Soins & Hygiène',
     stock: 100,
-    buyPrice: 3100,
+    buyPrice: 3200,
     retailPrice: 4000,
-    benefit: 900,
-    imageUrl: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500&auto=format&fit=crop&q=80',
+    benefit: 800,
+    imageUrl: '/products/lr-44-senteur-bouche.jpg',
     description: 'Spray désinfectant buccal rapide pour rafraîchir l\'haleine et assainir la bouche des germes.'
   },
   {
@@ -529,9 +529,9 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'SACHETS LONGRICHE (paquets de 100)',
     category: 'Soins & Hygiène',
     stock: 100,
-    buyPrice: 7200,
+    buyPrice: 7500,
     retailPrice: 8500,
-    benefit: 1300,
+    benefit: 1000,
     imageUrl: 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?w=500&auto=format&fit=crop&q=80',
     description: 'Emballages officiels certifiés pour la mise en valeur élégante de vos produits Longrich.'
   },
@@ -543,7 +543,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 1000,
     retailPrice: 1500,
     benefit: 500,
-    imageUrl: 'https://images.unsplash.com/photo-1471218674243-e8a68a00415e?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-48-reactif-ph.jpg',
     description: 'Réactif pratique pour tester instantanément le potentiel d\'hydrogénation (acidité/alcalinité).'
   },
   {
@@ -551,10 +551,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'KIT DEMO',
     category: 'Soins & Hygiène',
     stock: 100,
-    buyPrice: 20000,
+    buyPrice: 23000,
     retailPrice: 25000,
-    benefit: 5000,
-    imageUrl: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500&auto=format&fit=crop&q=80',
+    benefit: 2000,
+    imageUrl: '/products/lr-49-kit-demonstration.jpg',
     description: 'Mallette complète de démonstration pratique contenant divers réactifs officiels.'
   },
   {
@@ -586,10 +586,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'SERVIETTES HYGIENIQUES EN CARTON',
     category: 'Hygiène Féminine',
     stock: 100,
-    buyPrice: 55000,
-    retailPrice: 60000,
-    benefit: 5000,
-    imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&auto=format&fit=crop&q=80',
+    buyPrice: 57000,
+    retailPrice: 67000,
+    benefit: 10000,
+    imageUrl: '/products/lr-52-serviettes-hygieniques.jpg',
     description: 'Carton complet de serviettes thérapeutiques ultra absorbantes à bande d\'anions magnétisante.'
   },
   {
@@ -597,9 +597,9 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'PROTEGE SLIP EN CARTON',
     category: 'Hygiène Féminine',
     stock: 100,
-    buyPrice: 55000,
-    retailPrice: 60000,
-    benefit: 5000,
+    buyPrice: 57000,
+    retailPrice: 67000,
+    benefit: 10000,
     imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&auto=format&fit=crop&q=80',
     description: 'Carton complet de protége-slips Longrich à l\'anion pour une hygiène intime protectrice quotidienne.'
   },
@@ -611,7 +611,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     buyPrice: 3500,
     retailPrice: 4500,
     benefit: 1000,
-    imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-54-serviettes-detail.jpg',
     description: 'Paquet individuel de serviettes. Protège contre irritations, mauvaises odeurs et candidoses.'
   },
   {
@@ -632,10 +632,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'POWER BANK',
     category: 'Produits Énergétiques',
     stock: 100,
-    buyPrice: 21000,
-    retailPrice: 25000,
+    buyPrice: 23000,
+    retailPrice: 27000,
     benefit: 4000,
-    imageUrl: 'https://images.unsplash.com/photo-1609592424407-302685666db3?w=500&auto=format&fit=crop&q=80',
+    imageUrl: '/products/lr-56-power-bank.jpg',
     description: 'Batterie externe brevetée à haut rendement énergétique d\'une longévité accrue.'
   },
   {
@@ -643,10 +643,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     name: 'CHAUSSURES ENERGETIQUES A+',
     category: 'Produits Énergétiques',
     stock: 100,
-    buyPrice: 100500,
+    buyPrice: 105000,
     retailPrice: 120000,
-    benefit: 19500,
-    imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&auto=format&fit=crop&q=80',
+    benefit: 15000,
+    imageUrl: '/products/lr-57-chaussures-energetiques.jpg',
     description: 'Chaussures magnétiques thérapeutiques stimulant les points d\'acuponcture de la voûte plantaire.'
   },
 
