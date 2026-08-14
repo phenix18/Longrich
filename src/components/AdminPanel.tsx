@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Product, Order, ShopSettings, AdminNotification } from '../types';
-import { INITIAL_PRODUCTS } from '../data/initialProducts';
+import { INITIAL_PRODUCTS, PRODUCT_CATEGORIES } from '../data/initialProducts';
 import { 
   X, Search, Database, Settings, ShieldAlert, TrendingUp, DollarSign, 
   ShoppingCart, RefreshCw, FileCode, CheckCircle, Trash2, Edit2, 
@@ -89,6 +89,10 @@ export function AdminPanel({
   const [settingsOrangeName, setSettingsOrangeName] = useState(settings.orangeMoneyName);
   const [settingsMoovNum, setSettingsMoovNum] = useState(settings.moovMoneyNumber);
   const [settingsMoovName, setSettingsMoovName] = useState(settings.moovMoneyName);
+  const [settingsWaveNum, setSettingsWaveNum] = useState(settings.waveNumber || '');
+  const [settingsWaveName, setSettingsWaveName] = useState(settings.waveName || '');
+  const [settingsDeliveryManagerNum, setSettingsDeliveryManagerNum] = useState(settings.deliveryManagerNumber || '');
+  const [settingsDeliveryManagerName, setSettingsDeliveryManagerName] = useState(settings.deliveryManagerName || '');
   const [settingsPin, setSettingsPin] = useState(settings.adminPin);
   const [showSettingsPin, setShowSettingsPin] = useState(false);
   const [settingsShopName, setSettingsShopName] = useState(settings.shopName);
@@ -268,6 +272,57 @@ export function AdminPanel({
     }
   };
 
+  // Transfert d'une commande vérifiée au responsable livreur, via WhatsApp.
+  // Sans numéro configuré, WhatsApp ouvre son sélecteur de contact.
+  const handleForwardToDelivery = (order: Order) => {
+    const toShareableImageUrl = (src?: string) => {
+      if (!src || src.startsWith('data:')) return '';
+      if (/^https?:\/\//i.test(src)) return src;
+      return `${window.location.origin}${src.startsWith('/') ? '' : '/'}${src}`;
+    };
+
+    let msg = `🚚 *BON DE LIVRAISON - ${settings.shopName.toUpperCase()}*\n`;
+    msg += `Commande *${order.id}* vérifiée et validée par le commercial.\n\n`;
+
+    msg += `👤 *Client :*\n`;
+    msg += `• *Nom :* ${order.customerName}\n`;
+    msg += `• *Téléphone :* ${order.customerPhone}\n`;
+    msg += `• *Ville :* ${order.city}${order.country && order.country !== 'Burkina Faso' ? ` (${order.country})` : ''}\n`;
+    if (order.deliveryDistance) {
+      msg += `• *Zone :* ${order.deliveryDistance}\n`;
+    }
+    if (order.locationLink) {
+      msg += `• *Position GPS :* ${order.locationLink}\n`;
+    } else {
+      msg += `• *Position GPS :* non partagée — appeler le client\n`;
+    }
+    if (order.orderNotes) {
+      msg += `• *Repère / Notes :* ${order.orderNotes}\n`;
+    }
+
+    msg += `\n📦 *Articles payés à livrer :*\n`;
+    order.items.forEach((item) => {
+      msg += `👉 *${item.quantity}x* ${item.productName}\n`;
+      const photoUrl = toShareableImageUrl(products.find((p) => p.id === item.productId)?.imageUrl);
+      if (photoUrl) {
+        msg += `   🖼️ Photo : ${photoUrl}\n`;
+      }
+    });
+
+    msg += `\n💰 *Montant total encaissé :* ${formatXOF(order.totalPrice)}\n`;
+    msg += `💳 *Mode de paiement :* ${order.paymentMethod} — paiement vérifié ✅\n`;
+    if (order.deliveryFee !== undefined) {
+      msg += `🚚 *Frais de livraison inclus :* ${formatXOF(order.deliveryFee)}\n`;
+    }
+    msg += `\nMerci de confirmer la livraison une fois le colis remis. 🌿`;
+
+    const deliveryPhone = (settings.deliveryManagerNumber || '').replace(/[^0-9]/g, '');
+    const url = deliveryPhone
+      ? `https://api.whatsapp.com/send?phone=${deliveryPhone}&text=${encodeURIComponent(msg)}`
+      : `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  };
+
   const handleQuickStock = (p: Product, change: number) => {
     const nextStock = Math.max(0, p.stock + change);
     onUpdateProduct({
@@ -288,6 +343,10 @@ export function AdminPanel({
       orangeMoneyName: settingsOrangeName.trim(),
       moovMoneyNumber: settingsMoovNum.trim(),
       moovMoneyName: settingsMoovName.trim(),
+      waveNumber: settingsWaveNum.trim(),
+      waveName: settingsWaveName.trim(),
+      deliveryManagerNumber: settingsDeliveryManagerNum.replace(/\s+/g, ''),
+      deliveryManagerName: settingsDeliveryManagerName.trim(),
       adminPin: settingsPin.trim(),
       shopName: settingsShopName.trim() || 'Longrich Burkina Faso',
       shopCity: settingsShopCity.trim(),
@@ -748,7 +807,7 @@ export function AdminPanel({
                 {/* Category filters inside products directory */}
                 <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
                   <span className="text-xs font-bold text-slate-500 hidden sm:inline whitespace-nowrap">Catégorie:</span>
-                  {['Tous', 'Santé', 'Soins & Hygiène', 'Hygiène Féminine'].map((cat) => (
+                  {['Tous', ...PRODUCT_CATEGORIES].map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setCategoryFilter(cat)}
@@ -807,11 +866,13 @@ export function AdminPanel({
                             </td>
                             <td className="px-5 py-4">
                               <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${
-                                p.category === 'Santé' 
-                                  ? 'bg-emerald-50 text-emerald-800' 
-                                  : p.category === 'Hygiène Féminine' 
-                                    ? 'bg-rose-50 text-rose-700' 
-                                    : 'bg-teal-50 text-teal-800'
+                                p.category === 'Santé'
+                                  ? 'bg-emerald-50 text-emerald-800'
+                                  : p.category === 'Hygiène Féminine'
+                                    ? 'bg-rose-50 text-rose-700'
+                                    : p.category === 'Ménagère'
+                                      ? 'bg-amber-50 text-amber-800'
+                                      : 'bg-teal-50 text-teal-800'
                               }`}>
                                 {p.category}
                               </span>
@@ -1013,6 +1074,16 @@ export function AdminPanel({
                         <div className="text-xs text-gray-400 mt-0.5 font-medium">
                           📍 Ville: {order.city} | Paiement: {order.paymentMethod}
                         </div>
+                        {order.locationLink && (
+                          <a
+                            href={order.locationLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:underline mt-1"
+                          >
+                            🗺️ Ouvrir la position GPS du client
+                          </a>
+                        )}
                       </div>
 
                       {/* Financial outputs of this specific order */}
@@ -1089,6 +1160,22 @@ export function AdminPanel({
                           />
                         </div>
                       )}
+
+                      {/* Transfert de la commande vérifiée au responsable livreur */}
+                      <div className="mt-3 flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => handleForwardToDelivery(order)}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-black uppercase tracking-wider px-3.5 py-2 transition-all shadow-xs cursor-pointer"
+                        >
+                          🚚 Transférer au livreur
+                        </button>
+                        <span className="text-[10px] text-gray-400 font-medium">
+                          {settings.deliveryManagerNumber
+                            ? `Ouvre WhatsApp vers ${settings.deliveryManagerName || 'le livreur'} (${settings.deliveryManagerNumber})`
+                            : 'Aucun livreur configuré : WhatsApp demandera le contact'}
+                        </span>
+                      </div>
                     </div>
 
                   </div>
@@ -1189,6 +1276,53 @@ export function AdminPanel({
                         value={settingsMoovName}
                         onChange={(e) => setSettingsMoovName(e.target.value)}
                         className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:border-blue-500 focus:outline-hidden"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="text-[11px] font-bold text-sky-600 bg-sky-50 px-2 py-0.5 rounded uppercase">🌊 Compte Wave</h4>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-700 mb-1">Numéro Wave</label>
+                      <input
+                        type="text"
+                        value={settingsWaveNum}
+                        onChange={(e) => setSettingsWaveNum(e.target.value)}
+                        placeholder="Vide = même compte que Moov"
+                        className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:border-sky-500 focus:outline-hidden font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-700 mb-1">Titulaire Wave</label>
+                      <input
+                        type="text"
+                        value={settingsWaveName}
+                        onChange={(e) => setSettingsWaveName(e.target.value)}
+                        placeholder="Vide = même titulaire que Moov"
+                        className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:border-sky-500 focus:outline-hidden"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h4 className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded uppercase">🚚 Responsable Livreur</h4>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-700 mb-1">WhatsApp du livreur</label>
+                      <input
+                        type="text"
+                        value={settingsDeliveryManagerNum}
+                        onChange={(e) => setSettingsDeliveryManagerNum(e.target.value)}
+                        placeholder="Ex: 22670000000"
+                        className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:border-emerald-600 focus:outline-hidden font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-700 mb-1">Nom du livreur</label>
+                      <input
+                        type="text"
+                        value={settingsDeliveryManagerName}
+                        onChange={(e) => setSettingsDeliveryManagerName(e.target.value)}
+                        className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-xs focus:border-emerald-600 focus:outline-hidden"
                       />
                     </div>
                   </div>
@@ -1781,11 +1915,9 @@ export function AdminPanel({
                   onChange={(e) => setFormCategory(e.target.value)}
                   className="w-full rounded-lg border border-gray-250 p-2 text-xs bg-white focus:border-emerald-600 focus:outline-hidden"
                 >
-                  <option value="Santé">Santé</option>
-                  <option value="Soins & Hygiène">Soins & Hygiène</option>
-                  <option value="Hygiène Féminine">Hygiène Féminine</option>
-                  <option value="Produits Énergétiques">Produits Énergétiques</option>
-                  <option value="Kits d'Adhésion">Kits d'Adhésion</option>
+                  {PRODUCT_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
                 </select>
               </div>
 

@@ -1,5 +1,15 @@
 import { Product, ShopSettings } from '../types';
 
+// Catégories officielles du catalogue (ordre d'affichage côté boutique et côté admin)
+export const PRODUCT_CATEGORIES = [
+  'Santé',
+  'Soins & Hygiène',
+  'Hygiène Féminine',
+  'Produits Énergétiques',
+  'Ménagère',
+  "Kits d'Adhésion",
+];
+
 export const INITIAL_PRODUCTS: Product[] = [
   // PRODUITS DE SANTE
   {
@@ -640,6 +650,23 @@ export const INITIAL_PRODUCTS: Product[] = [
     description: 'Chaussures magnétiques thérapeutiques stimulant les points d\'acuponcture de la voûte plantaire.'
   },
 
+  // PRODUITS MENAGERS
+  {
+    id: 'lr-67',
+    name: 'FOURNEAU DE CUISINE ENVIROFIT (FOYER AMÉLIORÉ)',
+    category: 'Ménagère',
+    stock: 100,
+    buyPrice: 25000,
+    retailPrice: 30000,
+    benefit: 5000,
+    imageUrl: '/products/fourneau-envirofit-01.jpg',
+    images: [
+      '/products/fourneau-envirofit-02.jpg',
+      '/products/fourneau-envirofit-03.jpg'
+    ],
+    description: 'Foyer amélioré à charbon Envirofit : corps métallique robuste, chambre de combustion céramique et grille amovible. Porte de tirage réglable pour maîtriser le feu, poignées latérales isolantes pour déplacer le fourneau en sécurité. Cuisson plus rapide avec beaucoup moins de charbon et de fumée qu\'un foyer traditionnel.'
+  },
+
   // KITS D'ADHESION
   {
     id: 'lr-58',
@@ -743,11 +770,15 @@ export const INITIAL_PRODUCTS: Product[] = [
 ];
 
 export const DEFAULT_SETTINGS: ShopSettings = {
-  whatsappNumber: '22670000000', // Numéro Burkina par défaut
-  orangeMoneyNumber: '70000000',
-  orangeMoneyName: 'Distributeur Longrich BF',
-  moovMoneyNumber: '60000000',
-  moovMoneyName: 'Longrich Burkina Faso',
+  whatsappNumber: '22676104143', // Commercial destinataire des commandes (Orange + WhatsApp)
+  orangeMoneyNumber: '0022676104143',
+  orangeMoneyName: 'ZALLE SAFIF',
+  moovMoneyNumber: '0022670829293',
+  moovMoneyName: 'ADAMA TAO',
+  waveNumber: '0022670829293', // Même compte que Moov
+  waveName: 'ADAMA TAO',
+  deliveryManagerNumber: '', // À renseigner dans l'admin : numéro WhatsApp du responsable livreur
+  deliveryManagerName: 'Responsable Livraison',
   adminPin: '000000',
   shopName: 'Longrich Burkina Faso',
   shopCity: 'Ouagadougou',

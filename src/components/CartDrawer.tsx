@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CartItem, ShopSettings, Order } from '../types';
-import { ShoppingCart, X, MessageSquare, CreditCard, ChevronRight, Check, Upload, Tag, Truck, Gift, Trash2 } from 'lucide-react';
+import { ShoppingCart, X, MessageSquare, CreditCard, ChevronRight, Check, Upload, Tag, Truck, Gift, Trash2, MapPin } from 'lucide-react';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -46,11 +46,23 @@ export function CartDrawer({
   const [customCityName, setCustomCityName] = useState('');
   const [customCountryName, setCustomCountryName] = useState('');
   
-  const [paymentMethod, setPaymentMethod] = useState<'Orange Money' | 'Moov Money'>('Orange Money');
+  const [paymentMethod, setPaymentMethod] = useState<Order['paymentMethod']>('Orange Money');
   const [paymentScreenshot, setPaymentScreenshot] = useState<string>('');
   const [screenshotName, setScreenshotName] = useState<string>('');
   const [isCompactingImage, setIsCompactingImage] = useState(false);
-  
+
+  // Position GPS partagée par le client (transmise ensuite au livreur)
+  const [locationLink, setLocationLink] = useState<string>('');
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string>('');
+
+  // Écran de confirmation : permet d'envoyer les vraies images (photos des
+  // articles + preuve de paiement) dans WhatsApp après la soumission.
+  const [submittedOrder, setSubmittedOrder] = useState<Order | null>(null);
+  const [shareFiles, setShareFiles] = useState<File[]>([]);
+  const [isPreparingFiles, setIsPreparingFiles] = useState(false);
+  const [shareError, setShareError] = useState<string>('');
+
   const [orderNotes, setOrderNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -92,6 +104,109 @@ export function CartDrawer({
 
   const formatXOF = (amount: number) => {
     return amount.toLocaleString('fr-FR') + ' F CFA';
+  };
+
+  // Compte de dépôt correspondant au moyen de paiement choisi.
+  // Wave partage le compte Moov tant qu'aucun numéro dédié n'est configuré.
+  const paymentAccount = paymentMethod === 'Orange Money'
+    ? { number: settings.orangeMoneyNumber, name: settings.orangeMoneyName }
+    : paymentMethod === 'Wave'
+      ? { number: settings.waveNumber || settings.moovMoneyNumber, name: settings.waveName || settings.moovMoneyName }
+      : { number: settings.moovMoneyNumber, name: settings.moovMoneyName };
+
+  // WhatsApp ne transporte que du texte via un lien : les photos sont donc
+  // envoyées sous forme d'URL cliquable. Les images en base64 (chargées depuis
+  // l'admin) n'ont pas d'URL publique et sont ignorées.
+  const toShareableImageUrl = (src?: string) => {
+    if (!src || src.startsWith('data:')) return '';
+    if (/^https?:\/\//i.test(src)) return src;
+    return `${window.location.origin}${src.startsWith('/') ? '' : '/'}${src}`;
+  };
+
+  // Un lien WhatsApp ne transporte que du texte. Pour que le commercial reçoive
+  // réellement les images, on les rassemble en fichiers et on passe par le
+  // partage natif du téléphone (navigator.share), qui sait viser WhatsApp.
+  const buildShareFiles = async (items: CartItem[], screenshot: string, orderId: string) => {
+    const files: File[] = [];
+
+    const addFile = async (source: string, baseName: string) => {
+      try {
+        const res = await fetch(source);
+        if (!res.ok) return;
+        const blob = await res.blob();
+        if (!blob.type.startsWith('image/')) return;
+        const extension = blob.type.split('/')[1]?.split('+')[0] || 'jpg';
+        files.push(new File([blob], `${baseName}.${extension}`, { type: blob.type }));
+      } catch {
+        // Image inaccessible (hors ligne ou bloquée par CORS) : on l'ignore.
+      }
+    };
+
+    if (screenshot) {
+      await addFile(screenshot, `preuve-paiement-${orderId}`);
+    }
+
+    const alreadyAdded = new Set<string>();
+    for (const item of items) {
+      const source = item.product.imageUrl;
+      if (!source || alreadyAdded.has(source)) continue;
+      alreadyAdded.add(source);
+      await addFile(source, `article-${item.product.id}`);
+    }
+
+    return files;
+  };
+
+  const handleShareImages = async () => {
+    if (shareFiles.length === 0) return;
+    setShareError('');
+
+    const payload = {
+      files: shareFiles,
+      title: `Commande ${submittedOrder?.id || ''}`,
+      text: `Images de la commande ${submittedOrder?.id || ''} : articles choisis${paymentScreenshot ? ' et preuve de paiement' : ''}.`,
+    };
+
+    if (typeof navigator.canShare !== 'function' || !navigator.canShare(payload)) {
+      setShareError("Ce navigateur n'autorise pas l'envoi direct des images. Joignez-les manuellement dans la conversation WhatsApp.");
+      return;
+    }
+
+    try {
+      await navigator.share(payload);
+    } catch {
+      // Partage annulé par le client : rien à signaler.
+    }
+  };
+
+  const handleCloseAfterOrder = () => {
+    setSubmittedOrder(null);
+    setShareFiles([]);
+    setShareError('');
+    setPaymentScreenshot('');
+    setScreenshotName('');
+    onClose();
+  };
+
+  const handleShareLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError("Ce téléphone ne permet pas le partage de position.");
+      return;
+    }
+    setIsLocating(true);
+    setLocationError('');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setLocationLink(`https://www.google.com/maps?q=${latitude.toFixed(6)},${longitude.toFixed(6)}`);
+        setIsLocating(false);
+      },
+      () => {
+        setLocationError("Position refusée ou indisponible. Décrivez votre repère dans les notes.");
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   // Helper to scale & compress screenshot to fit in Firestore (zero-dependency Canvas rescaling)
@@ -182,6 +297,7 @@ export function CartDrawer({
         country: finalCountry,
         deliveryDistance: deliveryType === 'within_6km' ? 'Moins de 6 km' : (deliveryType === 'outside_6km' ? 'Plus de 6 km' : (deliveryType === 'other_city' ? 'Autre Ville' : 'Autre Pays')),
         deliveryFee: deliveryFee,
+        locationLink: locationLink || undefined,
         paymentMethod,
         paymentScreenshot: paymentScreenshot || undefined,
         items: cartItems.map((item) => {
@@ -210,8 +326,12 @@ export function CartDrawer({
         const activePrice = item.product.salePrice && item.product.salePrice > 0 ? item.product.salePrice : item.product.retailPrice;
         waMessage += `👉 *${item.quantity}x* ${item.product.name}\n`;
         waMessage += `   _Prix unitaire :_ ${formatXOF(activePrice)}${item.product.salePrice && item.product.salePrice > 0 ? ' (PROMO)' : ''}\n`;
+        const photoUrl = toShareableImageUrl(item.product.imageUrl);
+        if (photoUrl) {
+          waMessage += `   🖼️ Photo : ${photoUrl}\n`;
+        }
       });
-      
+
       waMessage += `----------------------------------------------\n`;
       waMessage += `📦 *Sous-total Articles :* ${formatXOF(totalAmount)}\n`;
       waMessage += `🚚 *Frais de livraison :* ${formatXOF(deliveryFee)} (${deliveryOptionLabel})\n`;
@@ -224,23 +344,24 @@ export function CartDrawer({
       if (deliveryType === 'other_country') {
         waMessage += `• *Pays d'expédition :* ${finalCountry}\n`;
       }
+      if (locationLink) {
+        waMessage += `• *Position GPS :* ${locationLink}\n`;
+      }
       if (orderNotes.trim()) {
         waMessage += `• *Instructions/Notes :* ${orderNotes.trim()}\n`;
       }
       waMessage += `• *Option de Paiement :* ${paymentMethod}\n`;
-      if (paymentScreenshot) {
-        waMessage += `• *Preuve de capture jointe :* ✅ Oui (Capture d'écran soumise dans le système de la boutique)\n`;
-      } else {
-        waMessage += `• *Preuve de capture jointe :* ❌ Non (Je ferai le dépôt maintenant)\n`;
-      }
       waMessage += `\n----------------------------------------------\n`;
       waMessage += `💳 *Instructions pour le dépôt ${paymentMethod} :*\n`;
-      if (paymentMethod === 'Orange Money') {
-        waMessage += `Veuillez m'expédier le montant de *${formatXOF(netPayable)}* sur le numéro :\n`;
-        waMessage += `📞 *${settings.orangeMoneyNumber}* (Titulaire: ${settings.orangeMoneyName})\n`;
+      waMessage += `Veuillez m'expédier le montant de *${formatXOF(netPayable)}* sur le numéro :\n`;
+      waMessage += `📞 *${paymentAccount.number}* (Titulaire: ${paymentAccount.name})\n`;
+      waMessage += `\n----------------------------------------------\n`;
+      if (paymentScreenshot) {
+        waMessage += `🧾 *Preuve de paiement :* déjà enregistrée dans la boutique.\n`;
+        waMessage += `_👉 Je la joins également ici en pièce jointe juste après ce message._\n`;
       } else {
-        waMessage += `Veuillez m'expédier le montant de *${formatXOF(netPayable)}* sur le numéro :\n`;
-        waMessage += `📞 *${settings.moovMoneyNumber}* (Titulaire: ${settings.moovMoneyName})\n`;
+        waMessage += `🧾 *Preuve de paiement :* pas encore effectuée.\n`;
+        waMessage += `_👉 Je fais le dépôt maintenant et je joins la capture d'écran ici._\n`;
       }
       waMessage += `\nMerci de valider et confirmer ma livraison ! 🌿`;
 
@@ -252,17 +373,28 @@ export function CartDrawer({
       // Notify App level state to record this order and decrease stocks
       onOrderPlaced(newOrder);
 
-      // Open WhatsApp tab
+      // Ouverture synchrone, sinon le navigateur bloque l'onglet WhatsApp
       window.open(whatsappUrl, '_blank');
 
-      // Clear the cart & local inputs
+      // Les articles sont capturés avant le vidage du panier, pour pouvoir
+      // rassembler leurs photos une fois la commande partie.
+      const orderedItems = [...cartItems];
+      const proofImage = paymentScreenshot;
+      setIsPreparingFiles(true);
+      buildShareFiles(orderedItems, proofImage, newOrder.id)
+        .then((files) => setShareFiles(files))
+        .catch(() => setShareFiles([]))
+        .finally(() => setIsPreparingFiles(false));
+
+      // Écran de confirmation : le panier est vidé mais le tiroir reste ouvert
+      // pour proposer l'envoi des images.
+      setSubmittedOrder(newOrder);
       onClearCart();
       setCustomerName('');
       setCustomerPhone('');
       setOrderNotes('');
-      setPaymentScreenshot('');
-      setScreenshotName('');
-      onClose();
+      setLocationLink('');
+      setLocationError('');
     } catch (err) {
       console.error('Checkout error:', err);
     } finally {
@@ -273,7 +405,10 @@ export function CartDrawer({
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs">
       {/* Backdrop overlay trigger */}
-      <div className="absolute inset-0 cursor-pointer" onClick={onClose} />
+      <div
+        className="absolute inset-0 cursor-pointer"
+        onClick={submittedOrder ? handleCloseAfterOrder : onClose}
+      />
 
       {/* Actual Drawer Body */}
       <div className="relative z-10 flex h-full w-full max-w-lg flex-col bg-white shadow-2xl transition-all duration-300">
@@ -282,11 +417,13 @@ export function CartDrawer({
         <div className="flex items-center justify-between border-b border-emerald-800 px-6 py-4 bg-emerald-800 text-white">
           <div className="flex items-center gap-2.5">
             <ShoppingCart className="w-5 h-5 text-emerald-100" />
-            <h2 className="font-display font-bold text-lg">Mon Panier ({cartItems.length})</h2>
+            <h2 className="font-display font-bold text-lg">
+              {submittedOrder ? 'Commande envoyée' : `Mon Panier (${cartItems.length})`}
+            </h2>
           </div>
           <button
             id="close-cart-btn"
-            onClick={onClose}
+            onClick={submittedOrder ? handleCloseAfterOrder : onClose}
             className="rounded-lg p-1.5 transition-colors hover:bg-white/10 text-emerald-100 hover:text-white"
           >
             <X className="w-5.5 h-5.5" />
@@ -294,7 +431,62 @@ export function CartDrawer({
         </div>
 
         {/* Content Container */}
-        {cartItems.length === 0 ? (
+        {submittedOrder ? (
+          <div className="flex flex-1 flex-col overflow-y-auto p-6 bg-gray-50/50 text-center">
+            <div className="mx-auto w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
+              <Check className="w-7 h-7 text-emerald-700" />
+            </div>
+            <h3 className="font-display font-bold text-emerald-900 text-lg">Commande transmise !</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Référence <span className="font-mono font-bold text-slate-700">{submittedOrder.id}</span> —
+              le détail est parti sur WhatsApp.
+            </p>
+
+            <div className="mt-6 rounded-2xl border border-emerald-100 bg-white p-4 text-left space-y-3">
+              <div className="flex items-start gap-2">
+                <Upload className="w-4.5 h-4.5 text-emerald-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-bold text-slate-800">Dernière étape : envoyer les images</p>
+                  <p className="text-[11px] text-slate-500 leading-relaxed mt-0.5">
+                    WhatsApp n'accepte pas les images dans un lien. Ce bouton les envoie
+                    directement dans la conversation : photos des articles
+                    {paymentScreenshot ? ' et votre preuve de paiement' : ''}.
+                  </p>
+                </div>
+              </div>
+
+              {isPreparingFiles ? (
+                <p className="text-xs font-semibold text-slate-400">Préparation des images...</p>
+              ) : shareFiles.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={handleShareImages}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-3.5 text-xs font-bold text-white uppercase tracking-wider transition-all shadow-md shadow-emerald-900/15 cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Envoyer {shareFiles.length} image{shareFiles.length > 1 ? 's' : ''} sur WhatsApp
+                </button>
+              ) : (
+                <p className="text-xs font-semibold text-amber-700">
+                  Aucune image à envoyer automatiquement. Joignez votre capture de paiement
+                  directement dans la conversation WhatsApp.
+                </p>
+              )}
+
+              {shareError && (
+                <p className="text-[11px] font-semibold text-rose-600 leading-relaxed">{shareError}</p>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleCloseAfterOrder}
+              className="mt-4 rounded-xl border border-slate-200 bg-white px-6 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
+            >
+              Terminer
+            </button>
+          </div>
+        ) : cartItems.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center p-8 text-center bg-gray-50/50">
             <span className="text-5xl mb-4">🌿</span>
             <h3 className="font-sans font-semibold text-emerald-800 text-lg">Votre panier est vide</h3>
@@ -329,7 +521,7 @@ export function CartDrawer({
                       {item.product.imageUrl ? (
                         <img src={item.product.imageUrl} alt={item.product.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       ) : (
-                        item.product.category === 'Santé' ? '🩺' : item.product.category === 'Hygiène Féminine' ? '🌸' : '🌿'
+                        item.product.category === 'Santé' ? '🩺' : item.product.category === 'Hygiène Féminine' ? '🌸' : item.product.category === 'Ménagère' ? '🔥' : '🌿'
                       )}
                     </div>
 
@@ -556,30 +748,42 @@ export function CartDrawer({
               {/* Payment Option Selector */}
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">Moyen de Paiement Préféré *</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('Orange Money')}
-                    className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
+                    className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
                       paymentMethod === 'Orange Money'
                         ? 'bg-amber-500/10 border-amber-500 text-amber-950 font-extrabold'
                         : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block shrink-0" />
-                    Orange Money
+                    Orange
                   </button>
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('Moov Money')}
-                    className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
+                    className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
                       paymentMethod === 'Moov Money'
                         ? 'bg-blue-50/50 border-blue-600 text-blue-950 font-extrabold'
                         : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block shrink-0" />
-                    Moov Money
+                    Moov
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('Wave')}
+                    className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                      paymentMethod === 'Wave'
+                        ? 'bg-sky-50 border-sky-500 text-sky-950 font-extrabold'
+                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block shrink-0" />
+                    Wave
                   </button>
                 </div>
               </div>
@@ -588,18 +792,64 @@ export function CartDrawer({
               <div className="p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-100 text-slate-900 text-xs text-left">
                 <div className="flex items-center gap-1.5 font-bold mb-1 text-emerald-800">
                   <CreditCard className="w-4 h-4 shrink-0" />
-                  <span>Instruction de Transfert Orange/Moov</span>
+                  <span>Instruction de Transfert {paymentMethod}</span>
                 </div>
                 Pour valider, veuillez transférer un dépôt de {' '}
                 <span className="font-extrabold text-emerald-800">{formatXOF(netPayable)}</span> sur le compte :
                 <div className="mt-2 font-mono bg-white p-2.5 rounded-lg border border-emerald-100 flex flex-col justify-center gap-0.5">
                   <span className="font-black text-sm text-emerald-950">
-                    📲 {paymentMethod === 'Orange Money' ? settings.orangeMoneyNumber : settings.moovMoneyNumber}
+                    📲 {paymentAccount.number}
                   </span>
                   <span className="text-[10px] text-gray-500 font-bold uppercase">
-                    Titulaire: {paymentMethod === 'Orange Money' ? settings.orangeMoneyName : settings.moovMoneyName}
+                    Titulaire: {paymentAccount.name}
                   </span>
                 </div>
+              </div>
+
+              {/* Partage de la position GPS, retransmise au livreur par le commercial */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-700 flex items-center justify-between">
+                  <span>Partager ma position exacte</span>
+                  <span className="text-[9px] bg-emerald-100/70 text-emerald-800 font-bold px-2 py-0.5 rounded-full">Aide le livreur</span>
+                </label>
+
+                {locationLink ? (
+                  <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-3">
+                    <MapPin className="w-5 h-5 text-emerald-700 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-emerald-900">Position enregistrée ✅</p>
+                      <a
+                        href={locationLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] text-emerald-700 font-semibold hover:underline break-all"
+                      >
+                        {locationLink}
+                      </a>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setLocationLink('')}
+                      className="rounded-lg bg-rose-550/10 hover:bg-rose-550/20 text-rose-600 font-extrabold text-[10px] uppercase py-1.5 px-2.5 transition-all cursor-pointer shrink-0"
+                    >
+                      Retirer
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleShareLocation}
+                    disabled={isLocating}
+                    className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-emerald-250 hover:border-emerald-600 bg-white p-3.5 text-xs font-semibold text-slate-800 transition-all cursor-pointer disabled:opacity-60"
+                  >
+                    <MapPin className="w-4.5 h-4.5 text-emerald-600" />
+                    {isLocating ? 'Localisation en cours...' : 'Envoyer ma position au livreur'}
+                  </button>
+                )}
+
+                {locationError && (
+                  <p className="text-[10px] font-semibold text-rose-600">{locationError}</p>
+                )}
               </div>
 
               {/* Upload Payment Screenshot (La capture d'écran du paiement) */}
@@ -644,10 +894,15 @@ export function CartDrawer({
                       <p className="text-xs font-semibold text-slate-800">
                         {isCompactingImage ? "Optimisation de l'image..." : "Cliquez ou glissez la capture d'écran"}
                       </p>
-                      <p className="text-[10px] text-slate-400">Preuve de transfert Orange Money / Moov Money</p>
+                      <p className="text-[10px] text-slate-400">Preuve de transfert Orange Money / Moov Money / Wave</p>
                     </div>
                   )}
                 </div>
+                <p className="text-[10px] text-slate-500 leading-relaxed">
+                  ℹ️ La capture est enregistrée dans la boutique pour le commercial. WhatsApp
+                  n'autorisant pas l'envoi automatique d'images, pensez à la <strong>joindre aussi
+                  dans la conversation</strong> qui va s'ouvrir.
+                </p>
               </div>
 
               <div>
