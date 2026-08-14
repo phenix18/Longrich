@@ -329,7 +329,7 @@ export function CartDrawer({
                       {item.product.imageUrl ? (
                         <img src={item.product.imageUrl} alt={item.product.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       ) : (
-                        item.product.category === 'Santé' ? '🩺' : item.product.category === 'Hygiène Féminine' ? '🌸' : '🌿'
+                        item.product.category === 'Santé' ? '🩺' : item.product.category === 'Hygiène Féminine' ? '🌸' : item.product.category === 'Ménagère' ? '🔥' : '🌿'
                       )}
                     </div>
 

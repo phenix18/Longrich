@@ -1,5 +1,15 @@
 import { Product, ShopSettings } from '../types';
 
+// Catégories officielles du catalogue (ordre d'affichage côté boutique et côté admin)
+export const PRODUCT_CATEGORIES = [
+  'Santé',
+  'Soins & Hygiène',
+  'Hygiène Féminine',
+  'Produits Énergétiques',
+  'Ménagère',
+  "Kits d'Adhésion",
+];
+
 export const INITIAL_PRODUCTS: Product[] = [
   // PRODUITS DE SANTE
   {
@@ -638,6 +648,38 @@ export const INITIAL_PRODUCTS: Product[] = [
     benefit: 19500,
     imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&auto=format&fit=crop&q=80',
     description: 'Chaussures magnétiques thérapeutiques stimulant les points d\'acuponcture de la voûte plantaire.'
+  },
+
+  // PRODUITS MENAGERS
+  {
+    id: 'lr-67',
+    name: 'FOURNEAU DE CUISINE ÉCONOMIQUE (PETIT MODÈLE)',
+    category: 'Ménagère',
+    stock: 100,
+    buyPrice: 12000,
+    retailPrice: 15000,
+    benefit: 3000,
+    description: 'Fourneau de cuisine compact à faible consommation de charbon. Chauffe rapidement, dégage peu de fumée et convient parfaitement aux petites marmites du quotidien.'
+  },
+  {
+    id: 'lr-68',
+    name: 'FOURNEAU DE CUISINE ÉCONOMIQUE (GRAND MODÈLE)',
+    category: 'Ménagère',
+    stock: 100,
+    buyPrice: 18000,
+    retailPrice: 22500,
+    benefit: 4500,
+    description: 'Fourneau de cuisine grand format en tôle renforcée, idéal pour les grandes familles et les repas de cérémonie. Économise jusqu\'à la moitié du charbon habituel.'
+  },
+  {
+    id: 'lr-69',
+    name: 'FOURNEAU DE CUISINE À GAZ 2 FEUX',
+    category: 'Ménagère',
+    stock: 100,
+    buyPrice: 45000,
+    retailPrice: 55000,
+    benefit: 10000,
+    description: 'Réchaud à gaz 2 feux avec grille en fonte et allumage sécurisé. Cuisson rapide, propre et maîtrisée pour toute la cuisine familiale.'
   },
 
   // KITS D'ADHESION

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Product, Order, ShopSettings, AdminNotification } from '../types';
-import { INITIAL_PRODUCTS } from '../data/initialProducts';
+import { INITIAL_PRODUCTS, PRODUCT_CATEGORIES } from '../data/initialProducts';
 import { 
   X, Search, Database, Settings, ShieldAlert, TrendingUp, DollarSign, 
   ShoppingCart, RefreshCw, FileCode, CheckCircle, Trash2, Edit2, 
@@ -748,7 +748,7 @@ export function AdminPanel({
                 {/* Category filters inside products directory */}
                 <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
                   <span className="text-xs font-bold text-slate-500 hidden sm:inline whitespace-nowrap">Catégorie:</span>
-                  {['Tous', 'Santé', 'Soins & Hygiène', 'Hygiène Féminine'].map((cat) => (
+                  {['Tous', ...PRODUCT_CATEGORIES].map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setCategoryFilter(cat)}
@@ -807,11 +807,13 @@ export function AdminPanel({
                             </td>
                             <td className="px-5 py-4">
                               <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${
-                                p.category === 'Santé' 
-                                  ? 'bg-emerald-50 text-emerald-800' 
-                                  : p.category === 'Hygiène Féminine' 
-                                    ? 'bg-rose-50 text-rose-700' 
-                                    : 'bg-teal-50 text-teal-800'
+                                p.category === 'Santé'
+                                  ? 'bg-emerald-50 text-emerald-800'
+                                  : p.category === 'Hygiène Féminine'
+                                    ? 'bg-rose-50 text-rose-700'
+                                    : p.category === 'Ménagère'
+                                      ? 'bg-amber-50 text-amber-800'
+                                      : 'bg-teal-50 text-teal-800'
                               }`}>
                                 {p.category}
                               </span>
@@ -1781,11 +1783,9 @@ export function AdminPanel({
                   onChange={(e) => setFormCategory(e.target.value)}
                   className="w-full rounded-lg border border-gray-250 p-2 text-xs bg-white focus:border-emerald-600 focus:outline-hidden"
                 >
-                  <option value="Santé">Santé</option>
-                  <option value="Soins & Hygiène">Soins & Hygiène</option>
-                  <option value="Hygiène Féminine">Hygiène Féminine</option>
-                  <option value="Produits Énergétiques">Produits Énergétiques</option>
-                  <option value="Kits d'Adhésion">Kits d'Adhésion</option>
+                  {PRODUCT_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
                 </select>
               </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Product, CartItem, Order, ShopSettings, AdminNotification } from './types';
-import { INITIAL_PRODUCTS, DEFAULT_SETTINGS } from './data/initialProducts';
+import { INITIAL_PRODUCTS, DEFAULT_SETTINGS, PRODUCT_CATEGORIES } from './data/initialProducts';
 import { ProductCard } from './components/ProductCard';
 import { CartDrawer } from './components/CartDrawer';
 import { AdminPanel } from './components/AdminPanel';
@@ -759,7 +759,7 @@ export default function App() {
           <div>
             <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Catégories</h2>
             <ul className="space-y-1">
-              {['Tous', 'Santé', 'Soins & Hygiène', 'Hygiène Féminine', 'Produits Énergétiques', "Kits d'Adhésion", 'Favoris'].map((cat) => {
+              {['Tous', ...PRODUCT_CATEGORIES, 'Favoris'].map((cat) => {
                 const isSelected = selectedCategory === cat;
                 const count = cat === 'Tous'
                   ? products.length
@@ -946,7 +946,7 @@ export default function App() {
             
             {/* Mobile-only horizontal scroll categories */}
             <div className="flex lg:hidden items-center gap-2 overflow-x-auto w-full scrollbar-none py-1">
-              {['Tous', 'Santé', 'Soins & Hygiène', 'Hygiène Féminine', 'Produits Énergétiques', "Kits d'Adhésion", 'Favoris'].map((cat) => (
+              {['Tous', ...PRODUCT_CATEGORIES, 'Favoris'].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}

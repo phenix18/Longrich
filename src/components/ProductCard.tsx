@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Product } from '../types';
 import { 
-  ShoppingCart, AlertCircle, Sparkles, Activity, HeartHandshake, 
-  Heart, Share2, ChevronLeft, ChevronRight, Link, Check, Send, Facebook 
+  ShoppingCart, AlertCircle, Sparkles, Activity, HeartHandshake, Flame,
+  Heart, Share2, ChevronLeft, ChevronRight, Link, Check, Send, Facebook
 } from 'lucide-react';
 
 interface ProductCardProps {
@@ -84,6 +84,14 @@ export function ProductCard({
         <div className="absolute inset-0 bg-gradient-to-tr from-emerald-950/40 via-pink-100/15 to-rose-900/30 flex items-center justify-center w-full h-full">
           <div className="relative p-6 bg-white/95 rounded-full shadow-lg border border-pink-100">
             <Sparkles className="w-10 h-10 text-emerald-600" />
+          </div>
+        </div>
+      );
+    } else if (product.category === 'Ménagère') {
+      return (
+        <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/40 via-amber-100/20 to-orange-900/30 flex items-center justify-center w-full h-full">
+          <div className="relative p-6 bg-white/95 rounded-full shadow-lg border border-amber-100">
+            <Flame className="w-10 h-10 text-amber-600" />
           </div>
         </div>
       );
