@@ -25,6 +25,34 @@ export default function App() {
   // Core visual data states (synced in real-time from Firestore)
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<ShopSettings>(DEFAULT_SETTINGS);
+
+  // Valeurs de démonstration semées par les versions précédentes de la boutique.
+  // Elles n'ont jamais été saisies par le gérant : on les considère comme absentes
+  // pour que les vraies coordonnées prennent le relais.
+  const LEGACY_PLACEHOLDERS: Partial<Record<keyof ShopSettings, string>> = {
+    whatsappNumber: '22670000000',
+    orangeMoneyNumber: '70000000',
+    orangeMoneyName: 'Distributeur Longrich BF',
+    moovMoneyNumber: '60000000',
+    moovMoneyName: 'Longrich Burkina Faso',
+  };
+
+  // Un document de réglages créé par une version antérieure peut manquer de champs
+  // ou les porter vides : sans fusion, les numéros de paiement et de WhatsApp
+  // s'affichaient vides et le lien WhatsApp partait sans destinataire.
+  const withSettingsDefaults = (data: Partial<ShopSettings>): ShopSettings => {
+    const usable: Partial<ShopSettings> = {};
+    (Object.keys(data) as (keyof ShopSettings)[]).forEach((key) => {
+      const value = data[key];
+      if (value === undefined || value === null) return;
+      if (typeof value === 'string') {
+        if (value.trim() === '') return;
+        if (LEGACY_PLACEHOLDERS[key] === value.trim()) return;
+      }
+      (usable as Record<string, unknown>)[key] = value;
+    });
+    return { ...DEFAULT_SETTINGS, ...usable };
+  };
   const [orders, setOrders] = useState<Order[]>([]);
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
 
@@ -111,19 +139,19 @@ export default function App() {
     const settingsRef = doc(db, 'settings', 'general');
     const unsubscribe = onSnapshot(settingsRef, (snapshot) => {
       if (snapshot.exists()) {
-        const data = snapshot.data() as ShopSettings;
-        if (data.adminPin === '1234') {
-          // Auto-migrate PIN from 1234 to 000000 in database ONLY if authenticated admin
-          const migrated = { ...data, adminPin: '000000' };
-          if (auth.currentUser && auth.currentUser.email === 'alexkorogo@gmail.com') {
-            setDoc(settingsRef, migrated).catch((err) => {
-              console.error('Failed to auto-migrate PIN setting:', err);
-            });
-          }
-          setSettings(migrated);
-        } else {
-          setSettings(data);
+        const stored = withSettingsDefaults(snapshot.data() as Partial<ShopSettings>);
+        const data = stored.adminPin === '1234' ? { ...stored, adminPin: '000000' } : stored;
+
+        // Persiste la fusion (PIN migré, champs manquants, coordonnées réelles)
+        // uniquement si l'admin est connecté : les règles Firestore interdisent
+        // l'écriture des réglages à un visiteur.
+        const isAdminSession = auth.currentUser && auth.currentUser.email === 'alexkorogo@gmail.com';
+        if (isAdminSession && JSON.stringify(data) !== JSON.stringify(snapshot.data())) {
+          setDoc(settingsRef, data).catch((err) => {
+            console.error('Failed to persist merged settings:', err);
+          });
         }
+        setSettings(data);
       } else {
         // Seed default settings on initial load setup
         setDoc(settingsRef, DEFAULT_SETTINGS).catch((err) => {

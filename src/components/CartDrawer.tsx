@@ -56,6 +56,13 @@ export function CartDrawer({
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState<string>('');
 
+  // Écran de confirmation : permet d'envoyer les vraies images (photos des
+  // articles + preuve de paiement) dans WhatsApp après la soumission.
+  const [submittedOrder, setSubmittedOrder] = useState<Order | null>(null);
+  const [shareFiles, setShareFiles] = useState<File[]>([]);
+  const [isPreparingFiles, setIsPreparingFiles] = useState(false);
+  const [shareError, setShareError] = useState<string>('');
+
   const [orderNotes, setOrderNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -114,6 +121,71 @@ export function CartDrawer({
     if (!src || src.startsWith('data:')) return '';
     if (/^https?:\/\//i.test(src)) return src;
     return `${window.location.origin}${src.startsWith('/') ? '' : '/'}${src}`;
+  };
+
+  // Un lien WhatsApp ne transporte que du texte. Pour que le commercial reçoive
+  // réellement les images, on les rassemble en fichiers et on passe par le
+  // partage natif du téléphone (navigator.share), qui sait viser WhatsApp.
+  const buildShareFiles = async (items: CartItem[], screenshot: string, orderId: string) => {
+    const files: File[] = [];
+
+    const addFile = async (source: string, baseName: string) => {
+      try {
+        const res = await fetch(source);
+        if (!res.ok) return;
+        const blob = await res.blob();
+        if (!blob.type.startsWith('image/')) return;
+        const extension = blob.type.split('/')[1]?.split('+')[0] || 'jpg';
+        files.push(new File([blob], `${baseName}.${extension}`, { type: blob.type }));
+      } catch {
+        // Image inaccessible (hors ligne ou bloquée par CORS) : on l'ignore.
+      }
+    };
+
+    if (screenshot) {
+      await addFile(screenshot, `preuve-paiement-${orderId}`);
+    }
+
+    const alreadyAdded = new Set<string>();
+    for (const item of items) {
+      const source = item.product.imageUrl;
+      if (!source || alreadyAdded.has(source)) continue;
+      alreadyAdded.add(source);
+      await addFile(source, `article-${item.product.id}`);
+    }
+
+    return files;
+  };
+
+  const handleShareImages = async () => {
+    if (shareFiles.length === 0) return;
+    setShareError('');
+
+    const payload = {
+      files: shareFiles,
+      title: `Commande ${submittedOrder?.id || ''}`,
+      text: `Images de la commande ${submittedOrder?.id || ''} : articles choisis${paymentScreenshot ? ' et preuve de paiement' : ''}.`,
+    };
+
+    if (typeof navigator.canShare !== 'function' || !navigator.canShare(payload)) {
+      setShareError("Ce navigateur n'autorise pas l'envoi direct des images. Joignez-les manuellement dans la conversation WhatsApp.");
+      return;
+    }
+
+    try {
+      await navigator.share(payload);
+    } catch {
+      // Partage annulé par le client : rien à signaler.
+    }
+  };
+
+  const handleCloseAfterOrder = () => {
+    setSubmittedOrder(null);
+    setShareFiles([]);
+    setShareError('');
+    setPaymentScreenshot('');
+    setScreenshotName('');
+    onClose();
   };
 
   const handleShareLocation = () => {
@@ -301,19 +373,28 @@ export function CartDrawer({
       // Notify App level state to record this order and decrease stocks
       onOrderPlaced(newOrder);
 
-      // Open WhatsApp tab
+      // Ouverture synchrone, sinon le navigateur bloque l'onglet WhatsApp
       window.open(whatsappUrl, '_blank');
 
-      // Clear the cart & local inputs
+      // Les articles sont capturés avant le vidage du panier, pour pouvoir
+      // rassembler leurs photos une fois la commande partie.
+      const orderedItems = [...cartItems];
+      const proofImage = paymentScreenshot;
+      setIsPreparingFiles(true);
+      buildShareFiles(orderedItems, proofImage, newOrder.id)
+        .then((files) => setShareFiles(files))
+        .catch(() => setShareFiles([]))
+        .finally(() => setIsPreparingFiles(false));
+
+      // Écran de confirmation : le panier est vidé mais le tiroir reste ouvert
+      // pour proposer l'envoi des images.
+      setSubmittedOrder(newOrder);
       onClearCart();
       setCustomerName('');
       setCustomerPhone('');
       setOrderNotes('');
-      setPaymentScreenshot('');
-      setScreenshotName('');
       setLocationLink('');
       setLocationError('');
-      onClose();
     } catch (err) {
       console.error('Checkout error:', err);
     } finally {
@@ -324,7 +405,10 @@ export function CartDrawer({
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs">
       {/* Backdrop overlay trigger */}
-      <div className="absolute inset-0 cursor-pointer" onClick={onClose} />
+      <div
+        className="absolute inset-0 cursor-pointer"
+        onClick={submittedOrder ? handleCloseAfterOrder : onClose}
+      />
 
       {/* Actual Drawer Body */}
       <div className="relative z-10 flex h-full w-full max-w-lg flex-col bg-white shadow-2xl transition-all duration-300">
@@ -333,11 +417,13 @@ export function CartDrawer({
         <div className="flex items-center justify-between border-b border-emerald-800 px-6 py-4 bg-emerald-800 text-white">
           <div className="flex items-center gap-2.5">
             <ShoppingCart className="w-5 h-5 text-emerald-100" />
-            <h2 className="font-display font-bold text-lg">Mon Panier ({cartItems.length})</h2>
+            <h2 className="font-display font-bold text-lg">
+              {submittedOrder ? 'Commande envoyée' : `Mon Panier (${cartItems.length})`}
+            </h2>
           </div>
           <button
             id="close-cart-btn"
-            onClick={onClose}
+            onClick={submittedOrder ? handleCloseAfterOrder : onClose}
             className="rounded-lg p-1.5 transition-colors hover:bg-white/10 text-emerald-100 hover:text-white"
           >
             <X className="w-5.5 h-5.5" />
@@ -345,7 +431,62 @@ export function CartDrawer({
         </div>
 
         {/* Content Container */}
-        {cartItems.length === 0 ? (
+        {submittedOrder ? (
+          <div className="flex flex-1 flex-col overflow-y-auto p-6 bg-gray-50/50 text-center">
+            <div className="mx-auto w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
+              <Check className="w-7 h-7 text-emerald-700" />
+            </div>
+            <h3 className="font-display font-bold text-emerald-900 text-lg">Commande transmise !</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Référence <span className="font-mono font-bold text-slate-700">{submittedOrder.id}</span> —
+              le détail est parti sur WhatsApp.
+            </p>
+
+            <div className="mt-6 rounded-2xl border border-emerald-100 bg-white p-4 text-left space-y-3">
+              <div className="flex items-start gap-2">
+                <Upload className="w-4.5 h-4.5 text-emerald-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-bold text-slate-800">Dernière étape : envoyer les images</p>
+                  <p className="text-[11px] text-slate-500 leading-relaxed mt-0.5">
+                    WhatsApp n'accepte pas les images dans un lien. Ce bouton les envoie
+                    directement dans la conversation : photos des articles
+                    {paymentScreenshot ? ' et votre preuve de paiement' : ''}.
+                  </p>
+                </div>
+              </div>
+
+              {isPreparingFiles ? (
+                <p className="text-xs font-semibold text-slate-400">Préparation des images...</p>
+              ) : shareFiles.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={handleShareImages}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 px-4 py-3.5 text-xs font-bold text-white uppercase tracking-wider transition-all shadow-md shadow-emerald-900/15 cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Envoyer {shareFiles.length} image{shareFiles.length > 1 ? 's' : ''} sur WhatsApp
+                </button>
+              ) : (
+                <p className="text-xs font-semibold text-amber-700">
+                  Aucune image à envoyer automatiquement. Joignez votre capture de paiement
+                  directement dans la conversation WhatsApp.
+                </p>
+              )}
+
+              {shareError && (
+                <p className="text-[11px] font-semibold text-rose-600 leading-relaxed">{shareError}</p>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleCloseAfterOrder}
+              className="mt-4 rounded-xl border border-slate-200 bg-white px-6 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
+            >
+              Terminer
+            </button>
+          </div>
+        ) : cartItems.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center p-8 text-center bg-gray-50/50">
             <span className="text-5xl mb-4">🌿</span>
             <h3 className="font-sans font-semibold text-emerald-800 text-lg">Votre panier est vide</h3>
