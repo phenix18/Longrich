@@ -653,33 +653,18 @@ export const INITIAL_PRODUCTS: Product[] = [
   // PRODUITS MENAGERS
   {
     id: 'lr-67',
-    name: 'FOURNEAU DE CUISINE ÉCONOMIQUE (PETIT MODÈLE)',
+    name: 'FOURNEAU DE CUISINE ENVIROFIT (FOYER AMÉLIORÉ)',
     category: 'Ménagère',
     stock: 100,
-    buyPrice: 12000,
-    retailPrice: 15000,
-    benefit: 3000,
-    description: 'Fourneau de cuisine compact à faible consommation de charbon. Chauffe rapidement, dégage peu de fumée et convient parfaitement aux petites marmites du quotidien.'
-  },
-  {
-    id: 'lr-68',
-    name: 'FOURNEAU DE CUISINE ÉCONOMIQUE (GRAND MODÈLE)',
-    category: 'Ménagère',
-    stock: 100,
-    buyPrice: 18000,
-    retailPrice: 22500,
-    benefit: 4500,
-    description: 'Fourneau de cuisine grand format en tôle renforcée, idéal pour les grandes familles et les repas de cérémonie. Économise jusqu\'à la moitié du charbon habituel.'
-  },
-  {
-    id: 'lr-69',
-    name: 'FOURNEAU DE CUISINE À GAZ 2 FEUX',
-    category: 'Ménagère',
-    stock: 100,
-    buyPrice: 45000,
-    retailPrice: 55000,
-    benefit: 10000,
-    description: 'Réchaud à gaz 2 feux avec grille en fonte et allumage sécurisé. Cuisson rapide, propre et maîtrisée pour toute la cuisine familiale.'
+    buyPrice: 25000,
+    retailPrice: 32500,
+    benefit: 7500,
+    imageUrl: '/products/fourneau-envirofit-01.jpg',
+    images: [
+      '/products/fourneau-envirofit-02.jpg',
+      '/products/fourneau-envirofit-03.jpg'
+    ],
+    description: 'Foyer amélioré à charbon Envirofit : corps métallique robuste, chambre de combustion céramique et grille amovible. Porte de tirage réglable pour maîtriser le feu, poignées latérales isolantes pour déplacer le fourneau en sécurité. Cuisson plus rapide avec beaucoup moins de charbon et de fumée qu\'un foyer traditionnel.'
   },
 
   // KITS D'ADHESION
