@@ -5,6 +5,8 @@ import { ProductCard } from './components/ProductCard';
 import { CartDrawer } from './components/CartDrawer';
 import { AdminPanel } from './components/AdminPanel';
 import { generatePriceListPdf } from './utils/priceListGenerator';
+import { applyHomeSeo, applyProductSeo, applyCategorySeo } from './utils/seo';
+import { BUSINESS } from './seo.config';
 import { 
   ShoppingCart, Lock, Search, Heart, Sparkles, Activity, Check, 
   HelpCircle, ShieldCheck, AlertCircle, X, ChevronRight, Bookmark, ArrowRight, Star, Bell, Download
@@ -113,6 +115,31 @@ export default function App() {
       setSharedProductId(prodId);
     }
   }, []);
+
+  // Référencement : titre, description et données structurées suivent ce que
+  // le visiteur regarde réellement — produit partagé, catégorie, ou catalogue.
+  useEffect(() => {
+    // Le catalogue Firestore arrive de façon asynchrone : si Googlebot indexe
+    // avant, on se rabat sur le catalogue embarqué dans le bundle pour que la
+    // fiche produit garde son titre et ses données structurées.
+    const catalogue = products.length > 0 ? products : INITIAL_PRODUCTS;
+
+    if (sharedProductId) {
+      const shared = catalogue.find((p) => p.id === sharedProductId);
+      if (shared) {
+        applyProductSeo(shared);
+        return;
+      }
+    }
+    if (selectedCategory !== 'Tous' && selectedCategory !== 'Favoris') {
+      applyCategorySeo(
+        selectedCategory,
+        catalogue.filter((p) => p.category === selectedCategory).length,
+      );
+      return;
+    }
+    applyHomeSeo();
+  }, [sharedProductId, selectedCategory, products]);
 
   // Interactive UI Modal States
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -1112,6 +1139,80 @@ export default function App() {
             Copyright Korogo © 2026
           </p>
         </footer>
+
+        {/* Contenu indexable : Google a besoin de texte réel pour rattacher le
+            site aux recherches par ville, par gamme et par produit. Ce bloc est
+            visible par les clients et sert aussi de repère pratique. */}
+        <section className="mt-10 border-t border-slate-200 pt-8 pb-4 text-slate-600">
+          <h2 className="font-display font-extrabold text-base text-emerald-900 uppercase tracking-wide">
+            Produits Longrich authentiques au Burkina Faso
+          </h2>
+          <p className="mt-2 text-xs leading-relaxed max-w-4xl">
+            {BUSINESS.name} est distributeur agréé des produits Longrich, avec des
+            boutiques à <strong>Bobo-Dioulasso</strong> et à <strong>Gaoua</strong>.
+            Retrouvez l'ensemble de la gamme : compléments alimentaires et produits de
+            bien-être, soins du corps et hygiène corporelle, hygiène féminine à l'anion,
+            thés détox, articles ménagers et kits d'adhésion pour devenir distributeur.
+          </p>
+
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-xs">
+            <div>
+              <h3 className="font-bold text-emerald-800 uppercase text-[11px] tracking-wider mb-1.5">
+                Nos boutiques
+              </h3>
+              <ul className="space-y-1 leading-relaxed">
+                {BUSINESS.locations.map((loc) => (
+                  <li key={loc.city}>
+                    📍 Boutique Longrich de <strong>{loc.city}</strong> ({loc.region})
+                  </li>
+                ))}
+                <li>📞 Commandes WhatsApp : {BUSINESS.phoneDisplay}</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-emerald-800 uppercase text-[11px] tracking-wider mb-1.5">
+                Zones de livraison
+              </h3>
+              <p className="leading-relaxed">
+                Livraison partout au Burkina Faso : {BUSINESS.deliveryZones.national.join(', ')}.
+                Expédition dans l'espace AES ({BUSINESS.deliveryZones.aes.join(' et ')}) et
+                vers {BUSINESS.deliveryZones.international.join(', ')}.
+              </p>
+              <p className="mt-1.5 leading-relaxed">
+                Paiement par Orange Money, Moov Money ou Wave.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-emerald-800 uppercase text-[11px] tracking-wider mb-1.5">
+                Nos gammes
+              </h3>
+              <ul className="space-y-1 leading-relaxed">
+                {PRODUCT_CATEGORIES.map((cat) => (
+                  <li key={cat}>
+                    <button
+                      onClick={() => setSelectedCategory(cat)}
+                      className="hover:text-emerald-700 hover:underline text-left cursor-pointer"
+                    >
+                      {cat} Longrich au Burkina Faso
+                      <span className="text-slate-400 ml-1">
+                        ({products.filter((p) => p.category === cat).length})
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <p className="mt-6 text-[10px] text-slate-400 leading-relaxed max-w-4xl">
+            Les produits Longrich sont des compléments alimentaires et des produits
+            cosmétiques. Ils ne sont ni des médicaments, ni un substitut à un avis
+            médical ou à un traitement prescrit. En cas de problème de santé,
+            consultez un professionnel de santé.
+          </p>
+        </section>
 
       </main>
 
