@@ -28,7 +28,8 @@ export interface Order {
   country?: string; // Saisie si hors du pays de la boutique
   deliveryDistance?: string; // Ex: 'Moins de 6 km', 'Plus de 6 km', 'Autre Ville', 'Autre Pays'
   deliveryFee?: number; // Montant de la livraison calculé
-  paymentMethod: 'Orange Money' | 'Moov Money';
+  locationLink?: string; // Lien Google Maps de la position partagée par le client
+  paymentMethod: 'Orange Money' | 'Moov Money' | 'Wave';
   paymentScreenshot?: string; // Optionnelle - Capture d'écran (preuve de paiement en Base64)
   items: {
     productId: string;
@@ -50,6 +51,10 @@ export interface ShopSettings {
   orangeMoneyName: string; // Nom du titulaire du compte
   moovMoneyNumber: string;
   moovMoneyName: string;
+  waveNumber?: string; // Si vide, le numéro Moov est réutilisé (même compte)
+  waveName?: string;
+  deliveryManagerNumber?: string; // Responsable livreur, format international sans +
+  deliveryManagerName?: string;
   adminPin: string; // Protection d'accès
   shopName: string;
   shopCity: string; // Ville d'ancrage de la boutique. Ex: 'Ouagadougou'

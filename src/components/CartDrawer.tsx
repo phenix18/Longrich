@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CartItem, ShopSettings, Order } from '../types';
-import { ShoppingCart, X, MessageSquare, CreditCard, ChevronRight, Check, Upload, Tag, Truck, Gift, Trash2 } from 'lucide-react';
+import { ShoppingCart, X, MessageSquare, CreditCard, ChevronRight, Check, Upload, Tag, Truck, Gift, Trash2, MapPin } from 'lucide-react';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -46,11 +46,16 @@ export function CartDrawer({
   const [customCityName, setCustomCityName] = useState('');
   const [customCountryName, setCustomCountryName] = useState('');
   
-  const [paymentMethod, setPaymentMethod] = useState<'Orange Money' | 'Moov Money'>('Orange Money');
+  const [paymentMethod, setPaymentMethod] = useState<Order['paymentMethod']>('Orange Money');
   const [paymentScreenshot, setPaymentScreenshot] = useState<string>('');
   const [screenshotName, setScreenshotName] = useState<string>('');
   const [isCompactingImage, setIsCompactingImage] = useState(false);
-  
+
+  // Position GPS partagée par le client (transmise ensuite au livreur)
+  const [locationLink, setLocationLink] = useState<string>('');
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string>('');
+
   const [orderNotes, setOrderNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -92,6 +97,44 @@ export function CartDrawer({
 
   const formatXOF = (amount: number) => {
     return amount.toLocaleString('fr-FR') + ' F CFA';
+  };
+
+  // Compte de dépôt correspondant au moyen de paiement choisi.
+  // Wave partage le compte Moov tant qu'aucun numéro dédié n'est configuré.
+  const paymentAccount = paymentMethod === 'Orange Money'
+    ? { number: settings.orangeMoneyNumber, name: settings.orangeMoneyName }
+    : paymentMethod === 'Wave'
+      ? { number: settings.waveNumber || settings.moovMoneyNumber, name: settings.waveName || settings.moovMoneyName }
+      : { number: settings.moovMoneyNumber, name: settings.moovMoneyName };
+
+  // WhatsApp ne transporte que du texte via un lien : les photos sont donc
+  // envoyées sous forme d'URL cliquable. Les images en base64 (chargées depuis
+  // l'admin) n'ont pas d'URL publique et sont ignorées.
+  const toShareableImageUrl = (src?: string) => {
+    if (!src || src.startsWith('data:')) return '';
+    if (/^https?:\/\//i.test(src)) return src;
+    return `${window.location.origin}${src.startsWith('/') ? '' : '/'}${src}`;
+  };
+
+  const handleShareLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError("Ce téléphone ne permet pas le partage de position.");
+      return;
+    }
+    setIsLocating(true);
+    setLocationError('');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setLocationLink(`https://www.google.com/maps?q=${latitude.toFixed(6)},${longitude.toFixed(6)}`);
+        setIsLocating(false);
+      },
+      () => {
+        setLocationError("Position refusée ou indisponible. Décrivez votre repère dans les notes.");
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   // Helper to scale & compress screenshot to fit in Firestore (zero-dependency Canvas rescaling)
@@ -182,6 +225,7 @@ export function CartDrawer({
         country: finalCountry,
         deliveryDistance: deliveryType === 'within_6km' ? 'Moins de 6 km' : (deliveryType === 'outside_6km' ? 'Plus de 6 km' : (deliveryType === 'other_city' ? 'Autre Ville' : 'Autre Pays')),
         deliveryFee: deliveryFee,
+        locationLink: locationLink || undefined,
         paymentMethod,
         paymentScreenshot: paymentScreenshot || undefined,
         items: cartItems.map((item) => {
@@ -210,8 +254,12 @@ export function CartDrawer({
         const activePrice = item.product.salePrice && item.product.salePrice > 0 ? item.product.salePrice : item.product.retailPrice;
         waMessage += `👉 *${item.quantity}x* ${item.product.name}\n`;
         waMessage += `   _Prix unitaire :_ ${formatXOF(activePrice)}${item.product.salePrice && item.product.salePrice > 0 ? ' (PROMO)' : ''}\n`;
+        const photoUrl = toShareableImageUrl(item.product.imageUrl);
+        if (photoUrl) {
+          waMessage += `   🖼️ Photo : ${photoUrl}\n`;
+        }
       });
-      
+
       waMessage += `----------------------------------------------\n`;
       waMessage += `📦 *Sous-total Articles :* ${formatXOF(totalAmount)}\n`;
       waMessage += `🚚 *Frais de livraison :* ${formatXOF(deliveryFee)} (${deliveryOptionLabel})\n`;
@@ -224,23 +272,24 @@ export function CartDrawer({
       if (deliveryType === 'other_country') {
         waMessage += `• *Pays d'expédition :* ${finalCountry}\n`;
       }
+      if (locationLink) {
+        waMessage += `• *Position GPS :* ${locationLink}\n`;
+      }
       if (orderNotes.trim()) {
         waMessage += `• *Instructions/Notes :* ${orderNotes.trim()}\n`;
       }
       waMessage += `• *Option de Paiement :* ${paymentMethod}\n`;
-      if (paymentScreenshot) {
-        waMessage += `• *Preuve de capture jointe :* ✅ Oui (Capture d'écran soumise dans le système de la boutique)\n`;
-      } else {
-        waMessage += `• *Preuve de capture jointe :* ❌ Non (Je ferai le dépôt maintenant)\n`;
-      }
       waMessage += `\n----------------------------------------------\n`;
       waMessage += `💳 *Instructions pour le dépôt ${paymentMethod} :*\n`;
-      if (paymentMethod === 'Orange Money') {
-        waMessage += `Veuillez m'expédier le montant de *${formatXOF(netPayable)}* sur le numéro :\n`;
-        waMessage += `📞 *${settings.orangeMoneyNumber}* (Titulaire: ${settings.orangeMoneyName})\n`;
+      waMessage += `Veuillez m'expédier le montant de *${formatXOF(netPayable)}* sur le numéro :\n`;
+      waMessage += `📞 *${paymentAccount.number}* (Titulaire: ${paymentAccount.name})\n`;
+      waMessage += `\n----------------------------------------------\n`;
+      if (paymentScreenshot) {
+        waMessage += `🧾 *Preuve de paiement :* déjà enregistrée dans la boutique.\n`;
+        waMessage += `_👉 Je la joins également ici en pièce jointe juste après ce message._\n`;
       } else {
-        waMessage += `Veuillez m'expédier le montant de *${formatXOF(netPayable)}* sur le numéro :\n`;
-        waMessage += `📞 *${settings.moovMoneyNumber}* (Titulaire: ${settings.moovMoneyName})\n`;
+        waMessage += `🧾 *Preuve de paiement :* pas encore effectuée.\n`;
+        waMessage += `_👉 Je fais le dépôt maintenant et je joins la capture d'écran ici._\n`;
       }
       waMessage += `\nMerci de valider et confirmer ma livraison ! 🌿`;
 
@@ -262,6 +311,8 @@ export function CartDrawer({
       setOrderNotes('');
       setPaymentScreenshot('');
       setScreenshotName('');
+      setLocationLink('');
+      setLocationError('');
       onClose();
     } catch (err) {
       console.error('Checkout error:', err);
@@ -556,30 +607,42 @@ export function CartDrawer({
               {/* Payment Option Selector */}
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">Moyen de Paiement Préféré *</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('Orange Money')}
-                    className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
+                    className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
                       paymentMethod === 'Orange Money'
                         ? 'bg-amber-500/10 border-amber-500 text-amber-950 font-extrabold'
                         : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block shrink-0" />
-                    Orange Money
+                    Orange
                   </button>
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('Moov Money')}
-                    className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
+                    className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
                       paymentMethod === 'Moov Money'
                         ? 'bg-blue-50/50 border-blue-600 text-blue-950 font-extrabold'
                         : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block shrink-0" />
-                    Moov Money
+                    Moov
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('Wave')}
+                    className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+                      paymentMethod === 'Wave'
+                        ? 'bg-sky-50 border-sky-500 text-sky-950 font-extrabold'
+                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block shrink-0" />
+                    Wave
                   </button>
                 </div>
               </div>
@@ -588,18 +651,64 @@ export function CartDrawer({
               <div className="p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-100 text-slate-900 text-xs text-left">
                 <div className="flex items-center gap-1.5 font-bold mb-1 text-emerald-800">
                   <CreditCard className="w-4 h-4 shrink-0" />
-                  <span>Instruction de Transfert Orange/Moov</span>
+                  <span>Instruction de Transfert {paymentMethod}</span>
                 </div>
                 Pour valider, veuillez transférer un dépôt de {' '}
                 <span className="font-extrabold text-emerald-800">{formatXOF(netPayable)}</span> sur le compte :
                 <div className="mt-2 font-mono bg-white p-2.5 rounded-lg border border-emerald-100 flex flex-col justify-center gap-0.5">
                   <span className="font-black text-sm text-emerald-950">
-                    📲 {paymentMethod === 'Orange Money' ? settings.orangeMoneyNumber : settings.moovMoneyNumber}
+                    📲 {paymentAccount.number}
                   </span>
                   <span className="text-[10px] text-gray-500 font-bold uppercase">
-                    Titulaire: {paymentMethod === 'Orange Money' ? settings.orangeMoneyName : settings.moovMoneyName}
+                    Titulaire: {paymentAccount.name}
                   </span>
                 </div>
+              </div>
+
+              {/* Partage de la position GPS, retransmise au livreur par le commercial */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-700 flex items-center justify-between">
+                  <span>Partager ma position exacte</span>
+                  <span className="text-[9px] bg-emerald-100/70 text-emerald-800 font-bold px-2 py-0.5 rounded-full">Aide le livreur</span>
+                </label>
+
+                {locationLink ? (
+                  <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-3">
+                    <MapPin className="w-5 h-5 text-emerald-700 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-emerald-900">Position enregistrée ✅</p>
+                      <a
+                        href={locationLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] text-emerald-700 font-semibold hover:underline break-all"
+                      >
+                        {locationLink}
+                      </a>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setLocationLink('')}
+                      className="rounded-lg bg-rose-550/10 hover:bg-rose-550/20 text-rose-600 font-extrabold text-[10px] uppercase py-1.5 px-2.5 transition-all cursor-pointer shrink-0"
+                    >
+                      Retirer
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleShareLocation}
+                    disabled={isLocating}
+                    className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-emerald-250 hover:border-emerald-600 bg-white p-3.5 text-xs font-semibold text-slate-800 transition-all cursor-pointer disabled:opacity-60"
+                  >
+                    <MapPin className="w-4.5 h-4.5 text-emerald-600" />
+                    {isLocating ? 'Localisation en cours...' : 'Envoyer ma position au livreur'}
+                  </button>
+                )}
+
+                {locationError && (
+                  <p className="text-[10px] font-semibold text-rose-600">{locationError}</p>
+                )}
               </div>
 
               {/* Upload Payment Screenshot (La capture d'écran du paiement) */}
@@ -644,10 +753,15 @@ export function CartDrawer({
                       <p className="text-xs font-semibold text-slate-800">
                         {isCompactingImage ? "Optimisation de l'image..." : "Cliquez ou glissez la capture d'écran"}
                       </p>
-                      <p className="text-[10px] text-slate-400">Preuve de transfert Orange Money / Moov Money</p>
+                      <p className="text-[10px] text-slate-400">Preuve de transfert Orange Money / Moov Money / Wave</p>
                     </div>
                   )}
                 </div>
+                <p className="text-[10px] text-slate-500 leading-relaxed">
+                  ℹ️ La capture est enregistrée dans la boutique pour le commercial. WhatsApp
+                  n'autorisant pas l'envoi automatique d'images, pensez à la <strong>joindre aussi
+                  dans la conversation</strong> qui va s'ouvrir.
+                </p>
               </div>
 
               <div>

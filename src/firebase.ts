@@ -1,13 +1,21 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore with specific database ID as strictly mandated
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+// Initialize Firestore with specific database ID as strictly mandated.
+// ignoreUndefinedProperties: les commandes et produits portent des champs
+// optionnels (preuve de paiement, position GPS, prix soldé, seuil de stock)
+// laissés à undefined. Sans cette option, Firestore rejette l'écriture entière
+// et la commande n'arrive jamais dans le panneau admin.
+export const db = initializeFirestore(
+  app,
+  { ignoreUndefinedProperties: true },
+  firebaseConfig.firestoreDatabaseId
+);
 
 // Initialize Authentication
 export const auth = getAuth(app);

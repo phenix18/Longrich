@@ -657,8 +657,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     category: 'Ménagère',
     stock: 100,
     buyPrice: 25000,
-    retailPrice: 32500,
-    benefit: 7500,
+    retailPrice: 30000,
+    benefit: 5000,
     imageUrl: '/products/fourneau-envirofit-01.jpg',
     images: [
       '/products/fourneau-envirofit-02.jpg',
@@ -770,11 +770,15 @@ export const INITIAL_PRODUCTS: Product[] = [
 ];
 
 export const DEFAULT_SETTINGS: ShopSettings = {
-  whatsappNumber: '22670000000', // Numéro Burkina par défaut
-  orangeMoneyNumber: '70000000',
-  orangeMoneyName: 'Distributeur Longrich BF',
-  moovMoneyNumber: '60000000',
-  moovMoneyName: 'Longrich Burkina Faso',
+  whatsappNumber: '22676104143', // Commercial destinataire des commandes (Orange + WhatsApp)
+  orangeMoneyNumber: '0022676104143',
+  orangeMoneyName: 'ZALLE SAFIF',
+  moovMoneyNumber: '0022670829293',
+  moovMoneyName: 'ADAMA TAO',
+  waveNumber: '0022670829293', // Même compte que Moov
+  waveName: 'ADAMA TAO',
+  deliveryManagerNumber: '', // À renseigner dans l'admin : numéro WhatsApp du responsable livreur
+  deliveryManagerName: 'Responsable Livraison',
   adminPin: '000000',
   shopName: 'Longrich Burkina Faso',
   shopCity: 'Ouagadougou',
