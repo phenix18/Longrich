@@ -330,9 +330,29 @@ export function CartDrawer({
         if (photoUrl) {
           waMessage += `   🖼️ Photo : ${photoUrl}\n`;
         }
+        // Stock restant une fois cette commande honorée, pour que le commercial
+        // repère tout de suite les articles à réapprovisionner.
+        const remainingStock = Math.max(0, item.product.stock - item.quantity);
+        const alertThreshold = item.product.lowStockThreshold ?? 5;
+        const stockFlag = remainingStock === 0 ? ' ⛔ RUPTURE' : (remainingStock <= alertThreshold ? ' ⚠️ STOCK BAS' : '');
+        waMessage += `   📊 _Stock restant :_ ${remainingStock}${stockFlag}\n`;
       });
 
       waMessage += `----------------------------------------------\n`;
+
+      const itemsToRestock = cartItems.filter((item) => {
+        const remainingStock = Math.max(0, item.product.stock - item.quantity);
+        return remainingStock <= (item.product.lowStockThreshold ?? 5);
+      });
+      if (itemsToRestock.length > 0) {
+        waMessage += `⚠️ *À RÉAPPROVISIONNER APRÈS CETTE COMMANDE :*\n`;
+        itemsToRestock.forEach((item) => {
+          const remainingStock = Math.max(0, item.product.stock - item.quantity);
+          waMessage += `• ${item.product.name} → ${remainingStock} restant(s)\n`;
+        });
+        waMessage += `----------------------------------------------\n`;
+      }
+
       waMessage += `📦 *Sous-total Articles :* ${formatXOF(totalAmount)}\n`;
       waMessage += `🚚 *Frais de livraison :* ${formatXOF(deliveryFee)} (${deliveryOptionLabel})\n`;
       waMessage += `💰 *Montant Net à Payer : ${formatXOF(netPayable)}*\n\n`;

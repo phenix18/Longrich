@@ -12,6 +12,7 @@ export interface Product {
   benefit: number;     // Bénéfice (calculated automatically, admin only)
   imageUrl?: string;
   images?: string[];   // Multiple product images (base64 or URL)
+  videoUrl?: string;   // Vidéo courte de démonstration (fichier importé ou URL hébergée)
   description?: string;
 }
 

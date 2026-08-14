@@ -82,6 +82,14 @@ export function AdminPanel({
   const [formDescription, setFormDescription] = useState('');
   const [formImageUrl, setFormImageUrl] = useState('');
   const [formImages, setFormImages] = useState<string[]>([]);
+  const [formVideoUrl, setFormVideoUrl] = useState<string>('');
+
+  // Partage des images d'une commande vers le livreur (préparé au clic sur
+  // « Transférer », puis envoyé par le partage natif du téléphone).
+  const [shareOrderId, setShareOrderId] = useState<string | null>(null);
+  const [orderShareFiles, setOrderShareFiles] = useState<File[]>([]);
+  const [isPreparingOrderFiles, setIsPreparingOrderFiles] = useState(false);
+  const [orderShareError, setOrderShareError] = useState<string>('');
 
   // Settings form states
   const [settingsWhatsapp, setSettingsWhatsapp] = useState(settings.whatsappNumber);
@@ -199,6 +207,7 @@ export function AdminPanel({
     setFormDescription(p.description || '');
     setFormImageUrl(p.imageUrl || '');
     setFormImages(p.images || []);
+    setFormVideoUrl(p.videoUrl || '');
   };
 
   const handleOpenAdd = () => {
@@ -214,6 +223,7 @@ export function AdminPanel({
     setFormDescription('');
     setFormImageUrl('');
     setFormImages([]);
+    setFormVideoUrl('');
   };
 
   const handleSaveProduct = (e: React.FormEvent) => {
@@ -231,6 +241,19 @@ export function AdminPanel({
     const calculatedBenefit = activeSellingPrice - formBuyPrice;
     const lowStockThresholdVal = formLowStockThreshold === '' ? undefined : Number(formLowStockThreshold);
 
+    // Firestore plafonne un document à 1 Mio. Images et vidéo importées sont
+    // stockées en base64 dans le produit : au-delà, l'enregistrement échouerait
+    // sans que l'admin comprenne pourquoi.
+    const mediaWeight = [formImageUrl, formVideoUrl, ...formImages]
+      .reduce((total, media) => total + (media ? media.length : 0), 0);
+    if (mediaWeight > 900_000) {
+      alert(
+        "Les médias de cet article sont trop lourds pour être enregistrés (limite technique de 1 Mo par article).\n\n" +
+        "Retirez quelques images, ou hébergez la vidéo ailleurs et collez son lien dans le champ URL."
+      );
+      return;
+    }
+
     if (editingProduct) {
       const updated: Product = {
         ...editingProduct,
@@ -246,6 +269,7 @@ export function AdminPanel({
         benefit: calculatedBenefit,
         imageUrl: formImageUrl.trim() || undefined,
         images: formImages.length > 0 ? formImages : undefined,
+        videoUrl: formVideoUrl.trim() || undefined,
         description: formDescription.trim() || undefined,
       };
       onUpdateProduct(updated);
@@ -265,6 +289,7 @@ export function AdminPanel({
         benefit: calculatedBenefit,
         imageUrl: formImageUrl.trim() || undefined,
         images: formImages.length > 0 ? formImages : undefined,
+        videoUrl: formVideoUrl.trim() || undefined,
         description: formDescription.trim() || undefined,
       };
       onAddProduct(newlyCreated);
@@ -320,7 +345,74 @@ export function AdminPanel({
     const url = deliveryPhone
       ? `https://api.whatsapp.com/send?phone=${deliveryPhone}&text=${encodeURIComponent(msg)}`
       : `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+    // Ouverture synchrone : un window.open différé serait bloqué par le navigateur.
     window.open(url, '_blank');
+
+    // Les images ne passent pas par le lien WhatsApp : on les prépare pour un
+    // envoi séparé via le partage natif du téléphone.
+    setShareOrderId(order.id);
+    setOrderShareFiles([]);
+    setOrderShareError('');
+    setIsPreparingOrderFiles(true);
+    buildOrderImageFiles(order)
+      .then((files) => setOrderShareFiles(files))
+      .catch(() => setOrderShareFiles([]))
+      .finally(() => setIsPreparingOrderFiles(false));
+  };
+
+  // Rassemble en fichiers les photos des articles commandés et la preuve de
+  // paiement, pour que le livreur reçoive de vraies images et non des liens.
+  const buildOrderImageFiles = async (order: Order) => {
+    const files: File[] = [];
+
+    const addFile = async (source: string, baseName: string) => {
+      try {
+        const res = await fetch(source);
+        if (!res.ok) return;
+        const blob = await res.blob();
+        if (!blob.type.startsWith('image/')) return;
+        const extension = blob.type.split('/')[1]?.split('+')[0] || 'jpg';
+        files.push(new File([blob], `${baseName}.${extension}`, { type: blob.type }));
+      } catch {
+        // Image inaccessible (hors ligne ou bloquée par CORS) : on l'ignore.
+      }
+    };
+
+    if (order.paymentScreenshot) {
+      await addFile(order.paymentScreenshot, `preuve-paiement-${order.id}`);
+    }
+
+    const alreadyAdded = new Set<string>();
+    for (const item of order.items) {
+      const source = products.find((p) => p.id === item.productId)?.imageUrl;
+      if (!source || alreadyAdded.has(source)) continue;
+      alreadyAdded.add(source);
+      await addFile(source, `article-${item.productId}`);
+    }
+
+    return files;
+  };
+
+  const handleShareOrderImages = async (order: Order) => {
+    if (orderShareFiles.length === 0) return;
+    setOrderShareError('');
+
+    const payload = {
+      files: orderShareFiles,
+      title: `Commande ${order.id}`,
+      text: `Images de la commande ${order.id} : articles à livrer${order.paymentScreenshot ? ' et preuve de paiement' : ''}.`,
+    };
+
+    if (typeof navigator.canShare !== 'function' || !navigator.canShare(payload)) {
+      setOrderShareError("Ce navigateur n'autorise pas l'envoi direct des images. Ouvrez le panneau admin depuis un téléphone, ou joignez-les manuellement dans WhatsApp.");
+      return;
+    }
+
+    try {
+      await navigator.share(payload);
+    } catch {
+      // Partage annulé : rien à signaler.
+    }
   };
 
   const handleQuickStock = (p: Product, change: number) => {
@@ -1117,11 +1209,27 @@ export function AdminPanel({
                     <div className="px-5 py-3.5 bg-slate-50/50 text-xs">
                       <div className="font-bold text-gray-400 uppercase text-[9px] tracking-wide mb-2">Articles de la Commande</div>
                       <div className="space-y-1.5 md:max-w-2xl">
-                        {order.items.map((item, idx) => (
+                        {order.items.map((item, idx) => {
+                          const catalogItem = products.find((p) => p.id === item.productId);
+                          const stockLeft = catalogItem?.stock;
+                          const stockAlert = catalogItem ? (catalogItem.lowStockThreshold ?? 5) : 5;
+
+                          return (
                           <div key={idx} className="flex justify-between items-center text-gray-700 bg-white p-2 rounded border border-gray-100">
                             <div>
                               <span className="font-extrabold text-emerald-950 mr-2">x{item.quantity}</span>
                               <span className="font-semibold">{item.productName}</span>
+                              {stockLeft !== undefined && (
+                                <span className={`ml-2 text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded ${
+                                  stockLeft === 0
+                                    ? 'bg-rose-100 text-rose-800'
+                                    : stockLeft <= stockAlert
+                                      ? 'bg-amber-100 text-amber-900'
+                                      : 'bg-slate-100 text-slate-500'
+                                }`}>
+                                  Stock : {stockLeft}
+                                </span>
+                              )}
                             </div>
                             <div className="font-mono text-gray-500 text-right">
                               {formatXOF(item.retailPrice * item.quantity)}
@@ -1130,7 +1238,8 @@ export function AdminPanel({
                               </span>
                             </div>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                       {order.orderNotes && (
                         <div className="bg-amber-50 p-3 rounded-lg border border-amber-100 text-[11px] mt-3 font-medium text-amber-950">
@@ -1170,12 +1279,32 @@ export function AdminPanel({
                         >
                           🚚 Transférer au livreur
                         </button>
+                        {shareOrderId === order.id && (
+                          isPreparingOrderFiles ? (
+                            <span className="text-[10px] font-bold text-slate-400">Préparation des images...</span>
+                          ) : orderShareFiles.length > 0 ? (
+                            <button
+                              type="button"
+                              onClick={() => handleShareOrderImages(order)}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-black uppercase tracking-wider px-3.5 py-2 transition-all shadow-xs cursor-pointer"
+                            >
+                              📎 Envoyer {orderShareFiles.length} image{orderShareFiles.length > 1 ? 's' : ''}
+                            </button>
+                          ) : (
+                            <span className="text-[10px] font-bold text-amber-700">Aucune image disponible pour cette commande</span>
+                          )
+                        )}
+
                         <span className="text-[10px] text-gray-400 font-medium">
                           {settings.deliveryManagerNumber
                             ? `Ouvre WhatsApp vers ${settings.deliveryManagerName || 'le livreur'} (${settings.deliveryManagerNumber})`
                             : 'Aucun livreur configuré : WhatsApp demandera le contact'}
                         </span>
                       </div>
+
+                      {orderShareError && shareOrderId === order.id && (
+                        <p className="mt-2 text-[11px] font-semibold text-rose-600 leading-relaxed">{orderShareError}</p>
+                      )}
                     </div>
 
                   </div>
@@ -2200,6 +2329,80 @@ export function AdminPanel({
                     </div>
                   </div>
                 )}
+
+                {/* Vidéo courte de démonstration */}
+                <div className="pt-3 border-t border-slate-100 space-y-2">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                    🎬 Vidéo courte (optionnelle)
+                  </label>
+
+                  <input
+                    type="url"
+                    value={formVideoUrl.startsWith('data:') ? '' : formVideoUrl}
+                    onChange={(e) => setFormVideoUrl(e.target.value)}
+                    placeholder="Lien direct vers une vidéo .mp4 ou .webm"
+                    disabled={formVideoUrl.startsWith('data:')}
+                    className="w-full rounded-lg border border-gray-250 p-2 text-[11px] focus:border-emerald-600 focus:outline-hidden font-mono disabled:bg-slate-50 disabled:text-slate-400"
+                  />
+
+                  <div className="border border-dashed border-emerald-250 bg-emerald-50/30 rounded-xl p-3 text-center">
+                    <div className="text-lg">🎥</div>
+                    <p className="text-[10px] font-extrabold text-slate-700 mt-0.5">Importer une vidéo depuis l'appareil</p>
+                    <p className="text-[8px] text-slate-400">
+                      Format .mp4 ou .webm, 400 Ko maximum. Pour une vidéo plus longue,
+                      hébergez-la et collez son lien ci-dessus.
+                    </p>
+
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (file.size > 400_000) {
+                          alert(
+                            `Cette vidéo pèse ${Math.round(file.size / 1024)} Ko, au-delà des 400 Ko autorisés par article.\n\n` +
+                            "Raccourcissez-la, ou hébergez-la ailleurs et collez son lien dans le champ ci-dessus."
+                          );
+                          e.target.value = '';
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = () => setFormVideoUrl(reader.result as string);
+                        reader.onerror = () => alert("La vidéo n'a pas pu être lue.");
+                        reader.readAsDataURL(file);
+                      }}
+                      className="hidden"
+                      id="product-video-file-input"
+                    />
+                    <label
+                      htmlFor="product-video-file-input"
+                      className="mt-1.5 inline-block rounded-md bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-1 px-3 text-[9px] uppercase cursor-pointer transition-colors shadow-xs"
+                    >
+                      Parcourir les vidéos
+                    </label>
+                  </div>
+
+                  {formVideoUrl && (
+                    <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50/60 p-2">
+                      <video
+                        src={formVideoUrl}
+                        className="w-16 h-12 rounded object-cover bg-black shrink-0"
+                        muted
+                      />
+                      <p className="flex-1 text-[10px] font-bold text-emerald-900 truncate">
+                        {formVideoUrl.startsWith('data:') ? 'Vidéo importée depuis l\'appareil' : formVideoUrl}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setFormVideoUrl('')}
+                        className="text-[8px] bg-rose-600 hover:bg-rose-700 text-white px-2 py-1 rounded font-black uppercase cursor-pointer shrink-0"
+                      >
+                        Retirer
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex gap-2.5 pt-3 border-t">

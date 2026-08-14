@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Product } from '../types';
 import { 
-  ShoppingCart, AlertCircle, Sparkles, Activity, HeartHandshake, Flame,
+  ShoppingCart, AlertCircle, Sparkles, Activity, HeartHandshake, Flame, Play,
   Heart, Share2, ChevronLeft, ChevronRight, Link, Check, Send, Facebook
 } from 'lucide-react';
 
@@ -24,6 +24,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const isOutOfStock = product.stock <= 0;
   const [activeImgIndex, setActiveImgIndex] = useState(0);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
 
@@ -55,6 +56,19 @@ export function ProductCard({
 
   // Render a beautiful, premium visual representation based on category or details
   const renderThematicGraphic = () => {
+    if (isVideoPlaying && product.videoUrl) {
+      return (
+        <video
+          src={product.videoUrl}
+          className="w-full h-full object-cover bg-black"
+          controls
+          autoPlay
+          playsInline
+          onEnded={() => setIsVideoPlaying(false)}
+        />
+      );
+    }
+
     if (allImages.length > 0) {
       const activeImage = allImages[activeImgIndex] || allImages[0];
       return (
@@ -121,6 +135,18 @@ export function ProductCard({
       <span className="absolute top-3 left-3 z-10 rounded-md bg-white/95 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-emerald-700 border border-emerald-100 shadow-xs uppercase">
         {product.category}
       </span>
+
+      {/* Bascule vers la vidéo de démonstration du produit */}
+      {product.videoUrl && !isVideoPlaying && (
+        <button
+          type="button"
+          onClick={() => setIsVideoPlaying(true)}
+          className="absolute top-11 left-3 z-10 inline-flex items-center gap-1 rounded-md bg-slate-900/85 backdrop-blur-md px-2.5 py-1 text-[10px] font-bold tracking-wider text-white shadow-xs uppercase hover:bg-slate-900 transition-colors cursor-pointer"
+          title="Voir la vidéo de démonstration"
+        >
+          <Play className="w-3 h-3" /> Vidéo
+        </button>
+      )}
 
       {/* Favorite Button */}
       <button
