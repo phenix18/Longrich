@@ -1,12 +1,12 @@
 /**
  * Configuration SEO centrale de la boutique.
  *
- * ⚠️ À METTRE À JOUR APRÈS L'ACHAT DU NOM DE DOMAINE : renseignez SITE_URL avec
- * l'adresse définitive (avec https://, sans barre oblique finale). Cette valeur
- * alimente les liens canoniques, le sitemap, les aperçus de partage et les
- * données structurées : une adresse erronée fait perdre tout le bénéfice.
+ * SITE_URL alimente les liens canoniques, le sitemap, les aperçus de partage et
+ * les données structurées. Le domaine apparaît aussi en dur dans index.html et
+ * public/robots.txt : en cas de changement, modifier les trois ensemble, sans
+ * quoi Google reçoit des adresses contradictoires.
  */
-export const SITE_URL = 'https://longrich-burkina.com';
+export const SITE_URL = 'https://longrich-burkina.homes';
 
 /** Identité commerciale reprise partout dans les balises et données structurées. */
 export const BUSINESS = {

@@ -9,4 +9,4 @@ Allow: /
 # aucun contenu indexable, pour éviter le contenu dupliqué.
 Disallow: /*?admin=
 
-Sitemap: https://longrich-burkina.com/sitemap.xml
+Sitemap: https://longrich-burkina.homes/sitemap.xml
