@@ -9,7 +9,7 @@
  * compilation : en cas de problème il prévient et laisse le sitemap existant.
  */
 import { writeFileSync } from 'node:fs';
-import { INITIAL_PRODUCTS } from '../src/data/initialProducts';
+import { INITIAL_PRODUCTS, PRODUCT_CATEGORIES } from '../src/data/initialProducts';
 import { SITE_URL } from '../src/seo.config';
 
 const escapeXml = (value: string) =>
@@ -32,6 +32,17 @@ try {
     <priority>1.0</priority>
   </url>`,
   ];
+
+  // Une adresse par gamme : autant de pages d'entrée supplémentaires pour les
+  // recherches par catégorie plutôt que par produit précis.
+  for (const category of PRODUCT_CATEGORIES) {
+    urls.push(`  <url>
+    <loc>${base}/?categorie=${encodeURIComponent(category)}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>`);
+  }
 
   for (const product of INITIAL_PRODUCTS) {
     // Une image déclarée dans le sitemap peut apparaître dans Google Images,

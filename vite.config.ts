@@ -6,6 +6,26 @@ import {defineConfig} from 'vite';
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
+    build: {
+      rollupOptions: {
+        output: {
+          // Le fichier unique de 1,2 Mo retardait l'affichage, ce que Google
+          // mesure et intègre au classement. Seules les librairies dont le
+          // client a réellement besoin sont isolées ici : elles restent en
+          // cache d'une visite à l'autre.
+          //
+          // recharts est volontairement absent de cette liste : déclarer un
+          // module en chunk manuel le rattache au graphe initial, il était donc
+          // téléchargé par tous les visiteurs. Laissé libre, il suit le
+          // panneau d'administration et n'est chargé qu'à son ouverture.
+          manualChunks: {
+            firebase: ['firebase/app', 'firebase/firestore', 'firebase/auth'],
+            icons: ['lucide-react'],
+          },
+        },
+      },
+      chunkSizeWarningLimit: 700,
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

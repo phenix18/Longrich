@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Product, CartItem, Order, ShopSettings, AdminNotification } from './types';
 import { INITIAL_PRODUCTS, DEFAULT_SETTINGS, PRODUCT_CATEGORIES } from './data/initialProducts';
 import { ProductCard } from './components/ProductCard';
 import { CartDrawer } from './components/CartDrawer';
-import { AdminPanel } from './components/AdminPanel';
+// Le panneau d'administration embarque les graphiques (recharts), soit près de
+// 350 Ko dont un client n'a jamais besoin. Chargé à la demande, il disparaît du
+// temps d'affichage initial — que Google mesure et intègre à son classement.
+const AdminPanel = lazy(() =>
+  import('./components/AdminPanel').then((m) => ({ default: m.AdminPanel })),
+);
 import { generatePriceListPdf } from './utils/priceListGenerator';
-import { applyHomeSeo, applyProductSeo, applyCategorySeo } from './utils/seo';
-import { BUSINESS } from './seo.config';
+import { applyHomeSeo, applyProductSeo, applyCategorySeo, applyFaqJsonLd } from './utils/seo';
+import { BUSINESS, FAQ } from './seo.config';
 import { 
   ShoppingCart, Lock, Search, Heart, Sparkles, Activity, Check, 
   HelpCircle, ShieldCheck, AlertCircle, X, ChevronRight, Bookmark, ArrowRight, Star, Bell, Download
@@ -114,7 +119,27 @@ export default function App() {
     if (prodId) {
       setSharedProductId(prodId);
     }
+    // Une catégorie ouverte par son adresse : chaque gamme devient une page
+    // indexable à part entière, et le lien reste partageable tel quel.
+    const cat = params.get('categorie');
+    if (cat && PRODUCT_CATEGORIES.includes(cat)) {
+      setSelectedCategory(cat);
+    }
+    applyFaqJsonLd();
   }, []);
+
+  // Reflète la catégorie choisie dans l'adresse, sans recharger la page ni
+  // empiler d'entrées dans l'historique du navigateur.
+  useEffect(() => {
+    if (sharedProductId) return;
+    const url = new URL(window.location.href);
+    if (selectedCategory === 'Tous' || selectedCategory === 'Favoris') {
+      url.searchParams.delete('categorie');
+    } else {
+      url.searchParams.set('categorie', selectedCategory);
+    }
+    window.history.replaceState({}, '', url);
+  }, [selectedCategory, sharedProductId]);
 
   // Référencement : titre, description et données structurées suivent ce que
   // le visiteur regarde réellement — produit partagé, catégorie, ou catalogue.
@@ -1206,6 +1231,30 @@ export default function App() {
             </div>
           </div>
 
+          {/* Questions fréquentes : reprises en données structurées FAQPage, elles
+              répondent aux recherches formulées en question. */}
+          <div className="mt-8">
+            <h2 className="font-display font-extrabold text-base text-emerald-900 uppercase tracking-wide">
+              Questions fréquentes
+            </h2>
+            <div className="mt-3 space-y-2 max-w-4xl">
+              {FAQ.map((item) => (
+                <details
+                  key={item.question}
+                  className="group rounded-xl border border-slate-200 bg-white p-3.5 open:border-emerald-200 open:bg-emerald-50/30"
+                >
+                  <summary className="cursor-pointer list-none text-xs font-bold text-slate-800 flex items-start gap-2 marker:hidden">
+                    <span className="text-emerald-600 shrink-0 group-open:rotate-90 transition-transform">›</span>
+                    <h3 className="inline font-bold">{item.question}</h3>
+                  </summary>
+                  <p className="mt-2 pl-4 text-[11px] leading-relaxed text-slate-600">
+                    {item.answer}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </div>
+
           <p className="mt-6 text-[10px] text-slate-400 leading-relaxed max-w-4xl">
             Les produits Longrich sont des compléments alimentaires et des produits
             cosmétiques. Ils ne sont ni des médicaments, ni un substitut à un avis
@@ -1252,6 +1301,15 @@ export default function App() {
 
       {/* B. Secure Administrator Panel portal */}
       {isAdminOpen && (
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-xs">
+              <div className="rounded-xl bg-white px-6 py-4 text-xs font-bold text-emerald-800 shadow-2xl">
+                Chargement du panneau d'administration...
+              </div>
+            </div>
+          }
+        >
         <AdminPanel
           products={products}
           orders={orders}
@@ -1269,6 +1327,7 @@ export default function App() {
           adminEmail={currentUser?.email}
           onLogOutAdmin={handleGoogleLogOut}
         />
+        </Suspense>
       )}
 
       {/* C. Enter Admin PIN modal */}

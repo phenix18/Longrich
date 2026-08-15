@@ -1,5 +1,5 @@
 import { Product } from '../types';
-import { SITE_URL, HOME_TITLE, HOME_DESCRIPTION, BUSINESS } from '../seo.config';
+import { SITE_URL, HOME_TITLE, HOME_DESCRIPTION, BUSINESS, FAQ } from '../seo.config';
 
 /**
  * Mise à jour des balises de référencement pendant la navigation.
@@ -95,6 +95,34 @@ const setProductJsonLd = (product: Product) => {
 
   const script = document.createElement('script');
   script.id = PRODUCT_LD_ID;
+  script.type = 'application/ld+json';
+  script.textContent = JSON.stringify(data);
+  document.head.appendChild(script);
+};
+
+const FAQ_LD_ID = 'seo-faq-jsonld';
+
+/**
+ * Déclare les questions fréquentes à Google. C'est ce qui permet à une réponse
+ * de la boutique d'apparaître directement dans les résultats, et de capter les
+ * recherches formulées en question.
+ *
+ * La source unique est FAQ dans seo.config.ts : modifier les questions là-bas
+ * met à jour l'affichage et les données structurées d'un seul coup.
+ */
+export const applyFaqJsonLd = () => {
+  if (document.getElementById(FAQ_LD_ID)) return;
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQ.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: { '@type': 'Answer', text: item.answer },
+    })),
+  };
+  const script = document.createElement('script');
+  script.id = FAQ_LD_ID;
   script.type = 'application/ld+json';
   script.textContent = JSON.stringify(data);
   document.head.appendChild(script);
