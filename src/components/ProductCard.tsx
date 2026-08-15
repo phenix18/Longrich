@@ -72,10 +72,16 @@ export function ProductCard({
     if (allImages.length > 0) {
       const activeImage = allImages[activeImgIndex] || allImages[0];
       return (
-        <img 
-          src={activeImage} 
-          alt={product.name} 
+        <img
+          src={activeImage}
+          // Texte alternatif descriptif : lu par les lecteurs d'écran, et c'est
+          // aussi ce qui permet à l'image de ressortir dans Google Images.
+          alt={`${product.name} — produit Longrich ${product.category} disponible au Burkina Faso`}
           referrerPolicy="no-referrer"
+          loading="lazy"
+          decoding="async"
+          width={500}
+          height={500}
           className="w-full h-full object-cover transition-transform duration-500"
         />
       );

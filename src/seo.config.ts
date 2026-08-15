@@ -78,6 +78,16 @@ export const KEYWORD_GROUPS = {
     'hygiène féminine naturelle', 'produit minceur', 'vitamine C',
     'calcium zinc fer', 'fortifiant naturel', 'soin de la peau',
     'produit anti-moustique', 'hygiène corporelle',
+    // Intentions de recherche liées à la santé, formulées comme ce que les
+    // produits sont réellement : un soutien nutritionnel ou un soin, jamais un
+    // traitement. Ces tournures captent le même public sans promesse trompeuse.
+    'complément alimentaire contre la fatigue', 'confort articulaire',
+    'soutien des défenses immunitaires', 'bien-être digestif',
+    'transit intestinal', 'complément énergie et vitalité',
+    'soin apaisant peau sensible', 'hygiène intime féminine',
+    'complément alimentaire pour femme', 'complément alimentaire pour homme',
+    'nutrition et micronutriments', 'antioxydants naturels',
+    'eau alcaline', 'produit détoxifiant naturel',
   ],
   achat: [
     'où acheter Longrich au Burkina', 'commander Longrich en ligne',
@@ -92,3 +102,73 @@ export const KEYWORD_GROUPS = {
 
 /** Chaîne unique pour la balise meta keywords. */
 export const ALL_KEYWORDS = Object.values(KEYWORD_GROUPS).flat().join(', ');
+
+/**
+ * Questions fréquentes, affichées sur la page et déclarées à Google en
+ * données structurées FAQPage.
+ *
+ * C'est le meilleur levier pour les recherches formulées en question, très
+ * courantes depuis un téléphone. La question sur le statut des produits est
+ * volontairement présente : elle capte les recherches à intention santé tout
+ * en donnant la réponse exacte, ce qui protège la boutique et inspire
+ * confiance au lieu de promettre un traitement.
+ */
+export const FAQ: { question: string; answer: string }[] = [
+  {
+    question: 'Où acheter des produits Longrich au Burkina Faso ?',
+    answer:
+      "Longrich Burkina Faso dispose de deux boutiques physiques, à Bobo-Dioulasso "
+      + "(région des Hauts-Bassins) et à Gaoua (région du Sud-Ouest). Le catalogue "
+      + "complet est également commandable en ligne sur ce site, avec livraison dans "
+      + "tout le pays.",
+  },
+  {
+    question: 'Comment commander et payer ma commande ?',
+    answer:
+      "Ajoutez les articles au panier, renseignez votre nom, votre téléphone et votre "
+      + "ville, puis validez : la commande part sur WhatsApp au +226 76 10 41 43. Le "
+      + "paiement se fait par Orange Money, Moov Money ou Wave, et vous joignez la "
+      + "capture du dépôt à la conversation.",
+  },
+  {
+    question: 'Livrez-vous partout au Burkina Faso et à l\'étranger ?',
+    answer:
+      "Oui. La livraison couvre Bobo-Dioulasso, Gaoua, Ouagadougou, Banfora, Koudougou, "
+      + "Ouahigouya, Diébougou, Orodara et l'ensemble du territoire burkinabè. Nous "
+      + "expédions aussi dans l'espace AES (Mali, Niger) ainsi qu'en Côte d'Ivoire, au "
+      + "Togo, au Bénin, au Ghana et au Sénégal. Les frais dépendent de la distance et "
+      + "s'affichent avant validation.",
+  },
+  {
+    question: 'Les produits Longrich sont-ils des médicaments ?',
+    answer:
+      "Non. Les produits Longrich sont des compléments alimentaires, des produits "
+      + "d'hygiène et des cosmétiques. Ils apportent un soutien nutritionnel ou un soin "
+      + "du quotidien, mais ne soignent aucune maladie et ne remplacent ni un avis "
+      + "médical, ni un traitement prescrit. Si vous suivez un traitement, êtes enceinte "
+      + "ou avez un problème de santé, parlez-en à un professionnel de santé avant "
+      + "d'utiliser un complément alimentaire.",
+  },
+  {
+    question: 'Les produits vendus sont-ils authentiques ?',
+    answer:
+      "Oui. Longrich Burkina Faso est distributeur agréé : les articles proviennent du "
+      + "circuit officiel Longrich et les prix suivent la grille tarifaire officielle "
+      + "en vigueur au Burkina Faso.",
+  },
+  {
+    question: 'Quels sont les prix des produits Longrich au Burkina Faso ?',
+    answer:
+      "Les prix vont de 1 500 F CFA pour une brosse à dents à 1 900 000 F CFA pour le "
+      + "kit d'adhésion VIP. Chaque fiche produit affiche son prix à jour, et la grille "
+      + "tarifaire complète est téléchargeable depuis la page d'accueil.",
+  },
+  {
+    question: 'Comment devenir distributeur Longrich au Burkina Faso ?',
+    answer:
+      "L'adhésion passe par un kit : Q-Silver (KR1 ou KR2) à 85 000 F CFA, Silver à "
+      + "160 000 F CFA, Gold à 340 000 F CFA, Platinium à 850 000 F CFA ou VIP à "
+      + "1 900 000 F CFA. Contactez-nous sur WhatsApp au +226 76 10 41 43 pour être "
+      + "accompagné dans le choix et l'inscription.",
+  },
+];
