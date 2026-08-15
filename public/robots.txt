@@ -1,0 +1,12 @@
+# Longrich Burkina Faso — règles d'exploration
+# ⚠️ Mettez l'adresse du sitemap à jour après l'achat du nom de domaine.
+
+User-agent: *
+Allow: /
+
+# Le panneau d'administration n'est pas une page distincte (application d'une
+# seule page), mais on écarte explicitement les paramètres qui n'apportent
+# aucun contenu indexable, pour éviter le contenu dupliqué.
+Disallow: /*?admin=
+
+Sitemap: https://longrich-burkina.homes/sitemap.xml

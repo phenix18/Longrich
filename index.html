@@ -1,13 +1,154 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
+
+    <!-- Domaine de production : longrich-burkina.homes
+         Il apparaît aussi dans src/seo.config.ts et public/robots.txt : en cas de
+         changement, les trois fichiers doivent être modifiés ensemble. -->
+
+    <title>Longrich Burkina Faso — Boutique Bobo-Dioulasso &amp; Gaoua</title>
+    <meta
+      name="description"
+      content="Produits Longrich authentiques au Burkina Faso : compléments alimentaires, soins du corps, hygiène féminine à l'anion, thés détox. Boutiques à Bobo-Dioulasso et Gaoua, livraison dans tout le pays, l'espace AES et à l'étranger."
+    />
+    <meta
+      name="keywords"
+      content="Longrich Burkina Faso, Longrich Bobo-Dioulasso, Longrich Gaoua, distributeur Longrich Burkina, boutique Longrich, produits Longrich authentiques, dentifrice Longrich, savon bambou, gel de douche Longrich, serviettes hygiéniques anion, gobelet alcalin, Cordyceps militaris, Berry Oil, Snake Oil, Nutriv Rich, thé détox, thé minceur, complément alimentaire naturel, produits bien-être, soins naturels, hygiène féminine naturelle, où acheter Longrich au Burkina, commander Longrich en ligne, livraison Bobo-Dioulasso, livraison Gaoua, Orange Money, Moov Money, Wave, devenir distributeur Longrich, kit adhésion Longrich"
+    />
+    <link rel="canonical" href="https://longrich-burkina.homes/" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="author" content="Longrich Burkina Faso" />
+    <meta name="theme-color" content="#047857" />
+
+    <!-- Ciblage géographique : aide Google à rattacher le site au Burkina Faso -->
+    <meta name="geo.region" content="BF" />
+    <meta name="geo.placename" content="Bobo-Dioulasso, Gaoua" />
+    <meta name="language" content="French" />
+
+    <!-- Aperçu lors des partages WhatsApp, Facebook, LinkedIn -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Longrich Burkina Faso" />
+    <meta property="og:locale" content="fr_BF" />
+    <meta property="og:title" content="Longrich Burkina Faso — Boutique Bobo-Dioulasso &amp; Gaoua" />
+    <meta
+      property="og:description"
+      content="Produits Longrich authentiques : compléments alimentaires, soins du corps, hygiène féminine, thés détox. Livraison dans tout le Burkina Faso, l'espace AES et à l'étranger."
+    />
+    <meta property="og:url" content="https://longrich-burkina.homes/" />
+    <meta property="og:image" content="https://longrich-burkina.homes/products/lr-08-cordyceps-militaris.jpg" />
+    <meta property="og:image:alt" content="Produits Longrich disponibles au Burkina Faso" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Longrich Burkina Faso — Boutique Bobo-Dioulasso &amp; Gaoua" />
+    <meta
+      name="twitter:description"
+      content="Produits Longrich authentiques, livrés dans tout le Burkina Faso, l'espace AES et à l'étranger."
+    />
+    <meta name="twitter:image" content="https://longrich-burkina.homes/products/lr-08-cordyceps-militaris.jpg" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/products/lr-08-cordyceps-militaris.jpg" />
+
+    <!-- Données structurées : c'est ce qui permet à Google d'afficher la fiche
+         boutique, les horaires, les villes desservies et le champ de recherche. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://longrich-burkina.homes/#organisation",
+          "name": "Longrich Burkina Faso",
+          "alternateName": ["Longrich Bobo-Dioulasso", "Longrich Gaoua"],
+          "url": "https://longrich-burkina.homes/",
+          "description": "Distributeur agréé des produits Longrich au Burkina Faso : compléments alimentaires, soins du corps, hygiène féminine et articles ménagers.",
+          "telephone": "+22676104143",
+          "areaServed": [
+            { "@type": "Country", "name": "Burkina Faso" },
+            { "@type": "Country", "name": "Mali" },
+            { "@type": "Country", "name": "Niger" },
+            { "@type": "Country", "name": "Côte d'Ivoire" },
+            { "@type": "Country", "name": "Togo" }
+          ]
+        },
+        {
+          "@type": "Store",
+          "@id": "https://longrich-burkina.homes/#boutique-bobo",
+          "name": "Longrich Burkina Faso — Bobo-Dioulasso",
+          "parentOrganization": { "@id": "https://longrich-burkina.homes/#organisation" },
+          "url": "https://longrich-burkina.homes/",
+          "telephone": "+22676104143",
+          "priceRange": "1000 - 1900000 XOF",
+          "currenciesAccepted": "XOF",
+          "paymentAccepted": "Orange Money, Moov Money, Wave, Espèces",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Bobo-Dioulasso",
+            "addressRegion": "Hauts-Bassins",
+            "addressCountry": "BF"
+          },
+          "areaServed": ["Bobo-Dioulasso", "Banfora", "Orodara", "Houndé", "Burkina Faso"]
+        },
+        {
+          "@type": "Store",
+          "@id": "https://longrich-burkina.homes/#boutique-gaoua",
+          "name": "Longrich Burkina Faso — Gaoua",
+          "parentOrganization": { "@id": "https://longrich-burkina.homes/#organisation" },
+          "url": "https://longrich-burkina.homes/",
+          "telephone": "+22676104143",
+          "priceRange": "1000 - 1900000 XOF",
+          "currenciesAccepted": "XOF",
+          "paymentAccepted": "Orange Money, Moov Money, Wave, Espèces",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Gaoua",
+            "addressRegion": "Sud-Ouest",
+            "addressCountry": "BF"
+          },
+          "areaServed": ["Gaoua", "Diébougou", "Batié", "Burkina Faso"]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://longrich-burkina.homes/#site",
+          "url": "https://longrich-burkina.homes/",
+          "name": "Longrich Burkina Faso",
+          "inLanguage": "fr",
+          "publisher": { "@id": "https://longrich-burkina.homes/#organisation" },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://longrich-burkina.homes/?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Contenu de repli lisible sans JavaScript. Les robots qui n'exécutent pas
+         le JS (réseaux sociaux, anciens crawlers) trouvent au moins l'essentiel. -->
+    <noscript>
+      <h1>Longrich Burkina Faso — Boutique Bobo-Dioulasso et Gaoua</h1>
+      <p>
+        Distributeur agréé des produits Longrich au Burkina Faso. Compléments
+        alimentaires, soins du corps, hygiène féminine à l'anion, thés détox,
+        articles ménagers et kits d'adhésion.
+      </p>
+      <p>
+        Boutiques à Bobo-Dioulasso et à Gaoua. Livraison à Ouagadougou, Banfora,
+        Koudougou, Ouahigouya, Diébougou, Orodara et dans tout le Burkina Faso,
+        ainsi que dans l'espace AES (Mali, Niger) et à l'étranger.
+      </p>
+      <p>Commandes par WhatsApp au +226 76 10 41 43. Activez JavaScript pour parcourir le catalogue.</p>
+    </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-
