@@ -1189,6 +1189,7 @@ export default function App() {
                 {BUSINESS.locations.map((loc) => (
                   <li key={loc.city}>
                     📍 Boutique Longrich de <strong>{loc.city}</strong> ({loc.region})
+                    {loc.street && <span className="block pl-4 text-slate-500">{loc.street}</span>}
                   </li>
                 ))}
                 <li>📞 Commandes WhatsApp : {BUSINESS.phoneDisplay}</li>
