@@ -22,8 +22,8 @@ export const BUSINESS = {
    * précise pèse lourd dans le référencement local et dans Google Maps.
    */
   locations: [
-    { city: 'Bobo-Dioulasso', region: 'Hauts-Bassins', street: 'Secteur 21, près du marché de Sarfalao' },
-    { city: 'Gaoua', region: 'Sud-Ouest', street: 'Non loin de la mairie, à proximité du marché' },
+    { city: 'Bobo-Dioulasso', region: 'Hauts-Bassins', street: 'Secteur 18, non loin des cités' },
+    { city: 'Gaoua', region: 'Sud-Ouest', street: 'Quartier Kelkan, en allant vers le CHR de Gaoua' },
   ],
   /** Zones de livraison, reprises telles quelles dans le texte indexable. */
   deliveryZones: {

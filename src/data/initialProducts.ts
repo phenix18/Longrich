@@ -777,7 +777,7 @@ export const DEFAULT_SETTINGS: ShopSettings = {
   moovMoneyName: 'ADAMA TAO',
   waveNumber: '0022670829293', // Même compte que Moov
   waveName: 'ADAMA TAO',
-  deliveryManagerNumber: '', // À renseigner dans l'admin : numéro WhatsApp du responsable livreur
+  deliveryManagerNumber: '22676087472', // Responsable livreur (76 08 74 72)
   deliveryManagerName: 'Responsable Livraison',
   adminPin: '000000',
   shopName: 'Longrich Burkina Faso',
